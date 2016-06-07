@@ -29,15 +29,15 @@ int main(int argc, char **argv)
     image_transport::ImageTransport it(nh);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1000, imageCallback);
 
-    rc = pthread_create(&runThread, NULL, &run.iDroneFSM, (void *)&navdata);
+    /*rc = pthread_create(&runThread, NULL, &run.iDroneFSM, (void *)&navdata);
     if (rc){
         std::cout << "Error:unable to create thread," << rc << std::endl;
         exit(-1);
-    }
-    int test;
+    }*/
+
     ros::spin();
     cv::destroyWindow("view");
-    pthread_exit(&runThread);
+//    pthread_exit(&runThread);
 }
 
 
