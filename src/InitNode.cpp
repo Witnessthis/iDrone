@@ -34,7 +34,7 @@ int main(int argc, char **argv)
         std::cout << "Error:unable to create thread," << rc << std::endl;
         exit(-1);
     }
-
+    int test;
     ros::spin();
     cv::destroyWindow("view");
     pthread_exit(&runThread);
