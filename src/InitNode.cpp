@@ -35,6 +35,8 @@ int main(int argc, char **argv)
         exit(-1);
     }*/
 
+    //lol
+
     ros::spin();
     cv::destroyWindow("view");
 //    pthread_exit(&runThread);
