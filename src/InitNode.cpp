@@ -4,21 +4,21 @@
 #include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <ardrone_autonomy/Navdata.h>
-#include "RunNode.h"
-//#include <pthread.h>
+#include <thread>
+#include <mutex>
 
 //====== Variables and objects ======
 ardrone_autonomy::Navdata navdata;
-RunNode run(&navdata);
+bool run = 1;
+std::mutex navLock;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 void navdataHandler(ardrone_autonomy::Navdata in_navdata);
+void iDroneFSM();
 
 int main(int argc, char **argv)
 {
-    int rc; // thread status
-    pthread_t runThread;
 
     ros::init(argc, argv, "iDroneNode");
     ros::NodeHandle nh;
@@ -26,26 +26,23 @@ int main(int argc, char **argv)
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1000, navdataHandler);
     cv::namedWindow("view");
     cv::startWindowThread();
-    image_transport::ImageTransport it(nh);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1000, imageCallback);
 
-    /*rc = pthread_create(&runThread, NULL, &run.iDroneFSM, (void *)&navdata);
-    if (rc){
-        std::cout << "Error:unable to create thread," << rc << std::endl;
-        exit(-1);
-    }*/
-
-    //lol
+    std::thread FSMThread(iDroneFSM);
 
     ros::spin();
+    run = 0;
+
     cv::destroyWindow("view");
-//    pthread_exit(&runThread);
+    FSMThread.join();
 }
 
 
 //====== Function implementations ======
 void navdataHandler(ardrone_autonomy::Navdata in_navdata){
+    navLock.lock();
     navdata = in_navdata;
+    navLock.unlock();
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -58,5 +55,17 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     catch (cv_bridge::Exception& e)
     {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+    }
+}
+
+void iDroneFSM() {
+
+    while (run) {
+        // read navdata through navdataHandle, values might change. investigate how to lock.
+
+        std::cout << "%Battery: " << navdata.batteryPercent << std::endl;
+
+        //implement switch case here
+
     }
 }

@@ -1,3 +1,4 @@
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 cmake_minimum_required(VERSION 2.8.3)
 project(iDrone)
 
@@ -192,6 +193,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_executable(iDroneRun src/InitNode.cpp src/RunNode.cpp src/RunNode.h)
+add_executable(iDroneRun src/InitNode.cpp)
 target_link_libraries(iDroneRun ${catkin_LIBRARIES})
 add_dependencies(iDroneRun $($(iDrone)_EXPORTED_TARGETS))
