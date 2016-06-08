@@ -7,10 +7,16 @@
 #include <thread>
 #include <mutex>
 
+#include <chrono>
+
+#include "FiniteStateMachine.h"
+
 //====== Variables and objects ======
 ardrone_autonomy::Navdata navdata;
 bool run = 1;
 std::mutex navLock;
+
+FiniteStateMachine fsm;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -40,9 +46,13 @@ int main(int argc, char **argv)
 
 //====== Function implementations ======
 void navdataHandler(ardrone_autonomy::Navdata in_navdata){
+    std::cout << "navData" << std::endl;
+
     navLock.lock();
     navdata = in_navdata;
     navLock.unlock();
+
+    fsm.update();
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -61,11 +71,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 void iDroneFSM() {
 
     while (run) {
-        // read navdata through navdataHandle, values might change. investigate how to lock.
 
-        std::cout << "%Battery: " << navdata.batteryPercent << std::endl;
+        fsm.act();
 
-        //implement switch case here
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
 
     }
 }

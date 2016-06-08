@@ -193,6 +193,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_executable(iDroneRun src/InitNode.cpp)
+add_executable(iDroneRun src/InitNode.cpp src/FiniteStateMachine.cpp src/State.cpp )
 target_link_libraries(iDroneRun ${catkin_LIBRARIES})
 add_dependencies(iDroneRun $($(iDrone)_EXPORTED_TARGETS))
