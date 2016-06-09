@@ -3,16 +3,17 @@
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <ardrone_autonomy/Navdata.h>
 #include <thread>
 #include <mutex>
 
 #include <chrono>
 
 #include "FiniteStateMachine.h"
+#include "model.h"
 
 //====== Variables and objects ======
-ardrone_autonomy::Navdata navdata;
+
+model_s model;
 bool run = 1;
 std::mutex navLock;
 
@@ -49,10 +50,10 @@ void navdataHandler(ardrone_autonomy::Navdata in_navdata){
     std::cout << "navData" << std::endl;
 
     navLock.lock();
-    navdata = in_navdata;
+    model.navdata = in_navdata;
     navLock.unlock();
 
-    fsm.update();
+    fsm.update(model);
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -74,7 +75,7 @@ void iDroneFSM() {
 
         fsm.act();
 
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
     }
 }

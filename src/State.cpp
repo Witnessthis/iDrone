@@ -7,26 +7,79 @@ State::State() {
 
 State::~State() { }
 
-States_e state1::getNext() {
-    return state2_e;
+States_e StartState::getNext(model_s model) {
+    std::cout << "battery test" << model.navdata.batteryPercent << std::endl;
+
+    if(model.navdata.state == 4){//drone is hovering
+        return CALIBRATE_e;
+    }
+
+    return NO_TRANSITION;
 }
 
-void state1::act() {
-    std::cout << "state1" << std::endl;
+void StartState::act() {
+    //TODO set calibration flag false
 }
 
-States_e state2::getNext() {
-    return state3_e;
+States_e CalibrateState::getNext(model_s model) {
+    if(model.hasCalibrated){
+        return MOVE_e;
+    }
+
+    return NO_TRANSITION;
 }
 
-void state2::act() {
-    std::cout << "state2" << std::endl;
+void CalibrateState::act() { }
+
+States_e SearchState::getNext(model_s model) {
+
+    return NO_TRANSITION;
 }
 
-States_e state3::getNext() {
-    return state1_e;
+void SearchState::act() { }
+
+States_e NoMatchState::getNext(model_s model) {
+
+    return NO_TRANSITION;
 }
 
-void state3::act() {
-    std::cout << "state3" << std::endl;
+void NoMatchState::act() { }
+
+States_e MoveState::getNext(model_s model) {
+
+
+    return NO_TRANSITION;
 }
+
+void MoveState::act() {
+    //front camera
+    //hover
+    //spin slowly
+    //wait for opencv input
+
+}
+
+States_e ForwardState::getNext(model_s model) {
+    return NO_TRANSITION; }
+
+void ForwardState::act() { }
+
+States_e TurnState::getNext(model_s model) {
+    return NO_TRANSITION;}
+
+void TurnState::act() { }
+
+States_e MatchState::getNext(model_s model) {
+    return NO_TRANSITION; }
+
+void MatchState::act() { }
+
+States_e OldAirfeildState::getNext(model_s model) {
+    return NO_TRANSITION; }
+
+void OldAirfeildState::act() { }
+
+States_e NewAirfeildState::getNext(model_s model) {
+    return NO_TRANSITION; }
+
+void NewAirfeildState::act() { }

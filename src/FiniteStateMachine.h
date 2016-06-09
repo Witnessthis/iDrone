@@ -3,6 +3,7 @@
 
 #include "State.h"
 #include <vector>
+#include "model.h"
 
 class FiniteStateMachine{
 
@@ -12,9 +13,7 @@ public:
     FiniteStateMachine();
     ~FiniteStateMachine();
     void act();
-    void update();
-
-    //std::vector<State> states;
+    void update(model_s model);
 
 };
 
