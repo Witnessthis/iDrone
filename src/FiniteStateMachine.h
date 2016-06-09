@@ -12,7 +12,7 @@ public:
 
     FiniteStateMachine();
     ~FiniteStateMachine();
-    void act();
+    void act(model_s model);
     void update(model_s model);
 
 };

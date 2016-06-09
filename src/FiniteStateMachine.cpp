@@ -6,7 +6,7 @@ CalibrateState calibrateState;
 SearchState searchState;
 NoMatchState noMatchState;
 MoveState moveState;
-ForwardState forwardState;
+AdjustFrontState adjustFrontState;
 TurnState turnState;
 MatchState matchState;
 OldAirfeildState oldAirfeildState;
@@ -46,8 +46,8 @@ void FiniteStateMachine::update(model_s model) {
             next = moveState.getNext(model);
             break;
 
-        case FORWARD_e:
-            next = forwardState.getNext(model);
+        case ADJUST_FRONT_e:
+            next = adjustFrontState.getNext(model);
             break;
 
         case TURN_e:
@@ -92,8 +92,8 @@ void FiniteStateMachine::update(model_s model) {
             case MOVE_e:
                 moveState.mayAct = true;
                 break;
-            case FORWARD_e:
-                forwardState.mayAct = true;
+            case ADJUST_FRONT_e:
+                adjustFrontState.mayAct = true;
                 break;
             case TURN_e:
                 turnState.mayAct = true;
@@ -116,7 +116,7 @@ void FiniteStateMachine::update(model_s model) {
     }
 }
 
-void FiniteStateMachine::act() {
+void FiniteStateMachine::act(model_s model) {
 
     //std::cout << "currentState: " << currentState << std::endl;
     //std::cout << "Num States: " << NUM_STATES << std::endl;
@@ -124,52 +124,52 @@ void FiniteStateMachine::act() {
     switch (currentState) {
         case START_e:
             if (startState.mayAct) {
-                startState.act();
+                startState.act(model);
             }
             break;
         case CALIBRATE_e:
             if (calibrateState.mayAct) {
-                calibrateState.act();
+                calibrateState.act(model);
             }
             break;
         case SEARCH_e:
             if (searchState.mayAct) {
-                searchState.act();
+                searchState.act(model);
             }
             break;
         case NO_MATCH_e:
             if (noMatchState.mayAct) {
-                noMatchState.act();
+                noMatchState.act(model);
             }
             break;
         case MOVE_e:
             if (moveState.mayAct) {
-                moveState.act();
+                moveState.act(model);
             }
             break;
-        case FORWARD_e:
-            if (forwardState.mayAct) {
-                forwardState.act();
+        case ADJUST_FRONT_e:
+            if (adjustFrontState.mayAct) {
+                adjustFrontState.act(model);
             }
             break;
         case TURN_e:
             if (turnState.mayAct) {
-                turnState.act();
+                turnState.act(model);
             }
             break;
         case MATCH_e:
             if (matchState.mayAct) {
-                matchState.act();
+                matchState.act(model);
             }
             break;
         case OLD_AIRFEILD_e:
             if (oldAirfeildState.mayAct) {
-                oldAirfeildState.act();
+                oldAirfeildState.act(model);
             }
             break;
         case NEW_AIRFEILD_e:
             if (newAirfeildState.mayAct) {
-                newAirfeildState.act();
+                newAirfeildState.act(model);
             }
             break;
 
