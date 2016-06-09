@@ -89,12 +89,13 @@ int main(int argc, char **argv)
 
     cv::destroyWindow("view");
     FSMThread.join();
+    std::cout << "så er vi her!" << std::endl;
 }
 
 
 //====== Function implementations ======
 void navdataHandler(ardrone_autonomy::Navdata in_navdata){
-    std::cout << "navData" << std::endl;
+    std::cout << "navData: " << in_navdata.state << std::endl;
 
     navLock.lock();
     model.navdata = in_navdata;

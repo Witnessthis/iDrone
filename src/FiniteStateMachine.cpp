@@ -19,10 +19,10 @@ FiniteStateMachine::FiniteStateMachine() {
 FiniteStateMachine::~FiniteStateMachine() { }
 
 void FiniteStateMachine::update(model_s model) {
-    std::cout << "update" << std::endl;
+    /*std::cout << "update" << std::endl;
     std::cout << "currentState: " << currentState << std::endl;
     std::cout << "Num States: " << NUM_STATES << std::endl;
-
+*/
     States_e next = NO_TRANSITION;
 
     switch (currentState) {

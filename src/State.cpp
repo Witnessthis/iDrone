@@ -74,7 +74,8 @@ void MoveState::act(model_s model) {
     //front camera
     //hover
     //spin slowly
-    //wait for opencv input
+    //wait for opencv input (msg: r_height, i_height, c_position)
+    //adjust according to the QR code in view (center)
 
 }
 
