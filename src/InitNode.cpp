@@ -44,6 +44,16 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "iDroneNode");
     ros::NodeHandle nh;
 
+    iDrone::qrAdjust qrAdjust;
+    qrAdjust.qr_id = "";
+    qrAdjust.l_height = 0;
+    qrAdjust.r_height = 0;
+    qrAdjust.t_length = 0;
+    qrAdjust.b_length = 0;
+    qrAdjust.c_pos = 0;
+
+    model.qrAdjust = qrAdjust;
+
     for(int i = 0; i<NUM_WALL_MARKINGS; i++) {
         model.wallMarkings[i].hasBeenVisited = false;
 
@@ -70,7 +80,7 @@ int main(int argc, char **argv)
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1000, navdataHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1000, imageCallback);
     ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 1000, wallQRHandler);
-    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
+    //ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
 
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
     land_pub = nh.advertise<std_msgs::Empty>("ardrone/land", 1000);
@@ -85,6 +95,9 @@ int main(int argc, char **argv)
     }*/
 
     ros::spin();
+
+    std::cout << "shutting down" << std::endl;
+
     run = 0;
 
     cv::destroyWindow("view");
@@ -95,7 +108,7 @@ int main(int argc, char **argv)
 
 //====== Function implementations ======
 void navdataHandler(ardrone_autonomy::Navdata in_navdata){
-    std::cout << "navData: " << in_navdata.state << std::endl;
+    //std::cout << "navData: " << in_navdata.state << std::endl;
 
     navLock.lock();
     model.navdata = in_navdata;
@@ -141,8 +154,11 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
 void iDroneFSM() {
 
     while (run) {
+        if (navLock.try_lock()) {
+            fsm.act(model);
+            navLock.unlock();
+        }
 
-        fsm.act(model);
 
         //std::this_thread::sleep_for(std::chrono::seconds(2));
 
