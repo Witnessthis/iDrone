@@ -55,11 +55,15 @@ States_e NoMatchState::getNext(model_s model) {
 void NoMatchState::act(model_s model) { }
 
 States_e MoveState::getNext(model_s model) {
-    std::cout << "id: " << model.qrAdjust.qr_id << std::endl;
+    //std::cout << "id: " << model.qrAdjust.qr_id << std::endl;
+
+    if(model.qrAdjust.qr_id == ""){
+        return NO_TRANSITION;
+    }
 
     if(model.qrAdjust.qr_id != "unknown"){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
-            std::cout << "wallmarking id: " << model.wallMarkings[i].id << std::endl;
+            //std::cout << "wallmarking id: " << model.wallMarkings[i].id << std::endl;
             if(!model.wallMarkings[i].id.compare(model.qrAdjust.qr_id) && !model.wallMarkings[i].hasBeenVisited){
                 //TODO test this later plz
                 return ADJUST_FRONT_e;

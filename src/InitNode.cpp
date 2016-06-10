@@ -77,9 +77,9 @@ int main(int argc, char **argv)
     cv::namedWindow("view");
     cv::startWindowThread();
 
-    ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1000, navdataHandler);
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1000, imageCallback);
-    ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 1000, wallQRHandler);
+    ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
+    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
+    ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 10, wallQRHandler);
     //ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
 
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
