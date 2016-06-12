@@ -193,7 +193,16 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
+find_package(OpenCV REQUIRED)
+
 include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(iDroneRun src/InitNode.cpp src/FiniteStateMachine.cpp src/State.cpp )
 target_link_libraries(iDroneRun ${catkin_LIBRARIES})
 add_dependencies(iDroneRun $($(iDrone)_EXPORTED_TARGETS))
+
+
+add_executable( qr_video src/video.cpp )
+target_link_libraries( qr_video ${OpenCV_LIBS} )
+target_link_libraries(qr_video ${catkin_LIBRARIES})
+target_link_libraries (qr_video ${ZBAR_LIBRARIES} zbar)
+add_dependencies(qr_video $($(iDrone)_EXPORTED_TARGETS))

@@ -74,13 +74,13 @@ int main(int argc, char **argv)
     model.hasCalibrated = false;
 
 
-    cv::namedWindow("view");
-    cv::startWindowThread();
+    //cv::namedWindow("view");
+    //cv::startWindowThread();
 
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
+    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
     ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 10, wallQRHandler);
-    //ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
+    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
 
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
     land_pub = nh.advertise<std_msgs::Empty>("ardrone/land", 1000);
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
     run = 0;
 
-    cv::destroyWindow("view");
+    //cv::destroyWindow("view");
     FSMThread.join();
     std::cout << "så er vi her!" << std::endl;
 }
@@ -139,11 +139,12 @@ void wallQRHandler(iDrone::qrAdjust msg){
 }
 
 void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
-    std::cout << "qr spotted recieved" << std::endl;
+
 
     navLock.lock();
     model.qrSpotted = msg->data.c_str();
 
+    std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
 
     fsm.update(model);
 
@@ -230,9 +231,13 @@ void ControlPanel::goRight(){
 }
 
 void ControlPanel::land(){
+    std::cout << "landing: " << std::endl;
+
     pubLock.lock();
     land_pub.publish(std_msgs::Empty());
     pubLock.unlock();
+
+    std::cout << "landed: " << std::endl;
 }
 
 void ControlPanel::up(){

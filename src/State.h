@@ -4,6 +4,8 @@
 #include "model.h"
 #include "ControlPanel.h"
 
+bool isFrontAdjusted(int r, int l, int t, int b, int c);
+
 class State{
 public:
     bool mayAct;

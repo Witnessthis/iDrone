@@ -55,16 +55,16 @@ States_e NoMatchState::getNext(model_s model) {
 void NoMatchState::act(model_s model) { }
 
 States_e MoveState::getNext(model_s model) {
-    //std::cout << "id: " << model.qrAdjust.qr_id << std::endl;
+    std::cout << "id: " << model.qrSpotted << std::endl;
 
-    if(model.qrAdjust.qr_id == ""){
+    if(model.qrSpotted == ""){
         return NO_TRANSITION;
     }
 
     if(model.qrAdjust.qr_id != "unknown"){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             //std::cout << "wallmarking id: " << model.wallMarkings[i].id << std::endl;
-            if(!model.wallMarkings[i].id.compare(model.qrAdjust.qr_id) && !model.wallMarkings[i].hasBeenVisited){
+            if(model.wallMarkings[i].id.compare(model.qrSpotted) && !model.wallMarkings[i].hasBeenVisited){
                 //TODO test this later plz
                 return ADJUST_FRONT_e;
             }
@@ -82,7 +82,7 @@ States_e MoveState::getNext(model_s model) {
 void MoveState::act(model_s model) {
     //front camera
     //controlPanel.hover();
-    controlPanel.spinLeft();
+    //controlPanel.spinLeft();
     //wait for opencv input (msg: r_height, i_height, c_position)
     //adjust according to the QR code in view (center)
 
@@ -97,7 +97,17 @@ States_e AdjustFrontState::getNext(model_s model) {
     return NO_TRANSITION; }
 
 void AdjustFrontState::act(model_s model) {
+    std::cout << "land " << std::endl;
     controlPanel.land();
+
+    /*if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
+        //is adjusted
+        controlPanel.hover();
+    }
+    else if(true){
+
+    }*/
+
 }
 
 
