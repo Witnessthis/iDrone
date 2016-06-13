@@ -71,9 +71,9 @@ int main ( int argc, char **argv )
 	image_transport::ImageTransport it(nh);
 
 	//Front camera
-	ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
+	//ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
 	//PC camera
-	//ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 1000, imageCallback);
+	ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 1000, imageCallback);
 
 	qrAdjust_pub = nh.advertise<iDrone::qrAdjust>("wall_qr", 100);
 	qrSpotted_pub = nh.advertise<std_msgs::String>("qr_spotted", 100);
@@ -732,7 +732,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		Mat drawing = Mat::zeros( edges.size(), CV_8UC3 );
 		for( int i = 0; i< contours.size(); i++ )
 		{
-			Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+			Scalar color = Scalar( 255, 0, 0);
 			drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 		}
 

@@ -196,7 +196,7 @@ include_directories(
 find_package(OpenCV REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_executable(iDroneRun src/InitNode.cpp src/FiniteStateMachine.cpp src/State.cpp )
+add_executable(iDroneRun src/InitNode.cpp src/FiniteStateMachine.cpp src/State.cpp)
 target_link_libraries(iDroneRun ${catkin_LIBRARIES})
 add_dependencies(iDroneRun $($(iDrone)_EXPORTED_TARGETS))
 
