@@ -4,6 +4,7 @@
 #include <ardrone_autonomy/Navdata.h>
 #include <iDrone/qrAdjust.h>
 #include <string>
+#include <ros/ros.h>
 
 enum WallMarkings_e {
     W00_e, W01_e, W02_e, W03_e, W04_e,
@@ -12,18 +13,34 @@ enum WallMarkings_e {
     W30_e, W31_e, W32_e, W33_e, W34_e,
     NUM_WALL_MARKINGS};
 
-struct WallMarking{
+enum AirFields_e {
+    AF1_e, AF2_e, AF3_e, AF4_e, AF5_e, AF6_e, AF7_e, AF8_e, AF9_e, AF10_e, NUM_AIRFIELDS
+};
+
+struct WallMarking {
     bool hasBeenVisited;
     std::string id;
+};
+
+struct AirField {
+    bool hasLanded;
+    std::string wallMarking;
+    int x;
+    int y;
 };
 
 struct model_s{
     bool hasCalibrated;
     WallMarking wallMarkings[NUM_WALL_MARKINGS];
 
+    AirField airfields[NUM_AIRFIELDS];
+    int nextAirfield;
+
     ardrone_autonomy::Navdata navdata;
     iDrone::qrAdjust qrAdjust;
     std::string qrSpotted;
+
+    bool hasCalledFlatTrim;
 };
 
 #endif

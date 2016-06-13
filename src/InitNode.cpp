@@ -1,4 +1,3 @@
-
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui.hpp>
@@ -14,6 +13,7 @@
 
 #include "std_msgs/String.h"
 #include "std_msgs/Empty.h"
+#include "std_srvs/Empty.h"
 #include "geometry_msgs/Twist.h"
 
 
@@ -31,11 +31,14 @@ ros::Publisher land_pub;
 ros::Publisher reset_pub;
 ros::Publisher vel_pub;
 
+ros::ServiceClient flatTrimClient;
+
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 void navdataHandler(ardrone_autonomy::Navdata in_navdata);
 void wallQRHandler(iDrone::qrAdjust msg);
 void qrSpottedHandler(const std_msgs::String::ConstPtr& msg);
+void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg);
 
 void iDroneFSM();
 
@@ -44,6 +47,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "iDroneNode");
     ros::NodeHandle nh;
 
+
+    //init model
     iDrone::qrAdjust qrAdjust;
     qrAdjust.qr_id = "";
     qrAdjust.l_height = 0;
@@ -66,12 +71,21 @@ int main(int argc, char **argv)
 
         std::stringstream ss;
 
-        ss << "W0" << counter << ".0" << (i % 5) << std::endl;
+        ss << "W0" << counter << ".0" << (i % 5);
         model.wallMarkings[i].id = ss.str();
 
     }
     model.qrSpotted = "";
     model.hasCalibrated = false;
+
+    for (int i = 0; i < NUM_AIRFIELDS; i++) {
+        model.airfields[i].hasLanded = false;
+        model.airfields[i].wallMarking = "";
+        model.airfields[i].x = -1;
+        model.airfields[i].y = -1;
+    }
+
+    model.nextAirfield = AF1_e;
 
 
     //cv::namedWindow("view");
@@ -81,6 +95,10 @@ int main(int argc, char **argv)
     //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
     ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 10, wallQRHandler);
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
+    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
+
+    flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim");
+    model.hasCalledFlatTrim = false;
 
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
     land_pub = nh.advertise<std_msgs::Empty>("ardrone/land", 1000);
@@ -142,7 +160,7 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
 
 
     navLock.lock();
-    model.qrSpotted = msg->data.c_str();
+    model.qrSpotted = msg->data;
 
     std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
 
@@ -150,6 +168,10 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
 
     model.qrSpotted = "";
     navLock.unlock();
+}
+
+void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
+    //TODO publish required imageanalysis topics
 }
 
 void iDroneFSM() {
@@ -186,7 +208,7 @@ void ControlPanel::hover(){
 
 void ControlPanel::spinLeft(){
     geometry_msgs::Twist cmdT;
-    cmdT.angular.z = 1;
+    cmdT.angular.z = 0.25;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
@@ -197,7 +219,7 @@ void ControlPanel::spinLeft(){
 
 void ControlPanel::spinRight(){
     geometry_msgs::Twist cmdT;
-    cmdT.angular.z = -1;
+    cmdT.angular.z = -0.25;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
@@ -291,5 +313,11 @@ void ControlPanel::backward(){
 void ControlPanel::reset() {
     pubLock.lock();
     reset_pub.publish(std_msgs::Empty());
+    pubLock.unlock();
+}
+
+void ControlPanel::flatTrim() {
+    pubLock.lock();
+    //flatTrimClient.call();
     pubLock.unlock();
 }

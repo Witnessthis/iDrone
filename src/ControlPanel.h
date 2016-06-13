@@ -16,6 +16,7 @@ public:
     void forward();
     void backward();
     void reset();
+    void flatTrim();
 };
 
 #endif

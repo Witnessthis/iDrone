@@ -4,7 +4,7 @@
 StartState startState;
 CalibrateState calibrateState;
 SearchState searchState;
-NoMatchState noMatchState;
+MoveNewPosState moveNewPosState;
 MoveState moveState;
 AdjustFrontState adjustFrontState;
 TurnState turnState;
@@ -38,8 +38,8 @@ void FiniteStateMachine::update(model_s model) {
             next = searchState.getNext(model);
             break;
 
-        case NO_MATCH_e:
-            next = noMatchState.getNext(model);
+        case MOVE_NEW_POS_e:
+            next = moveNewPosState.getNext(model);
             break;
 
         case MOVE_e:
@@ -86,8 +86,8 @@ void FiniteStateMachine::update(model_s model) {
             case SEARCH_e:
                 searchState.mayAct = true;
                 break;
-            case NO_MATCH_e:
-                noMatchState.mayAct = true;
+            case MOVE_NEW_POS_e:
+                moveNewPosState.mayAct = true;
                 break;
             case MOVE_e:
                 moveState.mayAct = true;
@@ -137,9 +137,9 @@ void FiniteStateMachine::act(model_s model) {
                 searchState.act(model);
             }
             break;
-        case NO_MATCH_e:
-            if (noMatchState.mayAct) {
-                noMatchState.act(model);
+        case MOVE_NEW_POS_e:
+            if (moveNewPosState.mayAct) {
+                moveNewPosState.act(model);
             }
             break;
         case MOVE_e:
