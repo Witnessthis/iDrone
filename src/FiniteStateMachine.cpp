@@ -7,7 +7,7 @@ SearchState searchState;
 MoveNewPosState moveNewPosState;
 MoveState moveState;
 AdjustFrontState adjustFrontState;
-TurnState turnState;
+AdjustBottomState adjustBottomState;
 MatchState matchState;
 OldAirfeildState oldAirfeildState;
 NewAirfeildState newAirfeildState;
@@ -19,8 +19,8 @@ FiniteStateMachine::FiniteStateMachine() {
 FiniteStateMachine::~FiniteStateMachine() { }
 
 void FiniteStateMachine::update(model_s model) {
-    std::cout << "update" << std::endl;
-    std::cout << "currentState: " << currentState << std::endl;
+    //std::cout << "update" << std::endl;
+    //std::cout << "currentState: " << currentState << std::endl;
     /*std::cout << "Num States: " << NUM_STATES << std::endl;
 */
     States_e next = NO_TRANSITION;
@@ -50,8 +50,8 @@ void FiniteStateMachine::update(model_s model) {
             next = adjustFrontState.getNext(model);
             break;
 
-        case TURN_e:
-            next = turnState.getNext(model);
+        case ADJUST_BOTTOM_e:
+            next = adjustBottomState.getNext(model);
             break;
 
         case OLD_AIRFEILD_e:
@@ -95,8 +95,8 @@ void FiniteStateMachine::update(model_s model) {
             case ADJUST_FRONT_e:
                 adjustFrontState.mayAct = true;
                 break;
-            case TURN_e:
-                turnState.mayAct = true;
+            case ADJUST_BOTTOM_e:
+                adjustBottomState.mayAct = true;
                 break;
             case OLD_AIRFEILD_e:
                 oldAirfeildState.mayAct = true;
@@ -152,9 +152,9 @@ void FiniteStateMachine::act(model_s model) {
                 adjustFrontState.act(model);
             }
             break;
-        case TURN_e:
-            if (turnState.mayAct) {
-                turnState.act(model);
+        case ADJUST_BOTTOM_e:
+            if (adjustBottomState.mayAct) {
+                adjustBottomState.act(model);
             }
             break;
         case MATCH_e:

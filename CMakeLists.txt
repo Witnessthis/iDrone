@@ -53,14 +53,16 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   qrAdjust.msg
+  afAdjust.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
+add_service_files(
+  FILES
 #   Service1.srv
 #   Service2.srv
-# )
+  CamSelect.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(

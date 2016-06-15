@@ -15,6 +15,9 @@
 #include "std_msgs/Empty.h"
 #include "std_srvs/Empty.h"
 #include "geometry_msgs/Twist.h"
+#include "iDrone/CamSelect.h"
+
+#include <stdint.h>
 
 
 //====== Variables and objects ======
@@ -32,6 +35,9 @@ ros::Publisher reset_pub;
 ros::Publisher vel_pub;
 
 ros::ServiceClient flatTrimClient;
+ros::ServiceClient cam_srv;
+
+iDrone::CamSelect camSelect_srv;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -47,6 +53,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "iDroneNode");
     ros::NodeHandle nh;
 
+    camSelect_srv.request.channel = 0; // Camera is set to front (1 == bottom)
 
     //init model
     iDrone::qrAdjust qrAdjust;
@@ -85,6 +92,20 @@ int main(int argc, char **argv)
         model.airfields[i].y = -1;
     }
 
+    model.afAdjust.c_x = -1;
+    model.afAdjust.c_y = -1;
+    model.afAdjust.imgc_x = -1;
+    model.afAdjust.imgc_y = -1;
+    model.afAdjust.c1_x = -1;
+    model.afAdjust.c1_y = -1;
+    model.afAdjust.c2_x = -1;
+    model.afAdjust.c2_y = -1;
+    model.afAdjust.c3_x = -1;
+    model.afAdjust.c3_y = -1;
+    model.afAdjust.c4_x = -1;
+    model.afAdjust.c4_y = -1;
+    model.afAdjust.match = NO_MATCH_e;
+
     model.nextAirfield = AF1_e;
 
 
@@ -97,8 +118,7 @@ int main(int argc, char **argv)
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
 
-    flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim");
-    model.hasCalledFlatTrim = false;
+    flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
     land_pub = nh.advertise<std_msgs::Empty>("ardrone/land", 1000);
@@ -111,6 +131,8 @@ int main(int argc, char **argv)
     for(int i = 0; i< NUM_WALL_MARKINGS; i++){
         std::cout << model.wallMarkings[i].id << std::endl;
     }*/
+
+    cam_srv = nh.serviceClient<iDrone::CamSelect>("/ardrone/setcamchannel");
 
     ros::spin();
 
@@ -253,13 +275,9 @@ void ControlPanel::goRight(){
 }
 
 void ControlPanel::land(){
-    std::cout << "landing: " << std::endl;
-
     pubLock.lock();
     land_pub.publish(std_msgs::Empty());
     pubLock.unlock();
-
-    std::cout << "landed: " << std::endl;
 }
 
 void ControlPanel::up(){
@@ -316,8 +334,44 @@ void ControlPanel::reset() {
     pubLock.unlock();
 }
 
+bool hasCalledFlatTrim = false;
 void ControlPanel::flatTrim() {
+    if(hasCalledFlatTrim){
+        return;
+    }
+
+    std::cout << "called flat trim" << std::endl;
+
+    hasCalledFlatTrim = true;
+
+    std_srvs::Empty flattrim_srv_srvs;
+
     pubLock.lock();
-    //flatTrimClient.call();
+    flatTrimClient.call(flattrim_srv_srvs);
+    pubLock.unlock();
+}
+
+
+void ControlPanel::frontCam() {
+    if(camSelect_srv.request.channel == 0){
+        return;
+    }
+
+    pubLock.lock();
+    camSelect_srv.request.channel = (uint8_t) 0;
+
+    cam_srv.call(camSelect_srv);
+    pubLock.unlock();
+}
+
+void ControlPanel::bottomCam() {
+    if(camSelect_srv.request.channel == 1){
+        return;
+    }
+
+    pubLock.lock();
+    camSelect_srv.request.channel = (uint8_t) 1;
+
+    cam_srv.call(camSelect_srv);
     pubLock.unlock();
 }

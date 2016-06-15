@@ -17,6 +17,8 @@ public:
     void backward();
     void reset();
     void flatTrim();
+    void frontCam();
+    void bottomCam();
 };
 
 #endif

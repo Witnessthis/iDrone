@@ -10,7 +10,6 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
-        std::cout << "Calibrate" << std::endl;
         return MOVE_e;
     }
 
@@ -20,14 +19,14 @@ States_e StartState::getNext(model_s model) {
 void StartState::act(model_s model) {
     //controlPanel.reset();
 
-    if(!model.hasCalledFlatTrim && model.navdata.state == 1){
-        model.hasCalledFlatTrim = true;
-
-        std::cout << "called flat trim" << std::endl;
+    if(model.navdata.state == 2){
+        controlPanel.flatTrim();
     }
 
-    controlPanel.takeOff();
-    controlPanel.hover();
+    controlPanel.frontCam();
+
+    //controlPanel.takeOff();
+    //controlPanel.hover();
 }
 
 States_e CalibrateState::getNext(model_s model) {
@@ -75,7 +74,6 @@ States_e MoveState::getNext(model_s model) {
             std::cout << "wallmarking id: " << model.qrSpotted << std::endl;
 
             if((model.wallMarkings[i].id == model.qrSpotted) && !model.wallMarkings[i].hasBeenVisited){
-                //TODO test this later plz
                 return ADJUST_FRONT_e;
             }
         }
@@ -121,7 +119,8 @@ States_e AdjustFrontState::getNext(model_s model) {
         }
     }
 
-    return NO_TRANSITION; }
+    return NO_TRANSITION;
+}
 
 void AdjustFrontState::act(model_s model) {
 
@@ -137,23 +136,64 @@ void AdjustFrontState::act(model_s model) {
         //qr is far to the right in the image
         controlPanel.spinRight();
     }
-    else if(model.qrAdjust.r_height < ADJUSTED_BORDER_HEIGHT_P && model.qrAdjust.l_height < ADJUSTED_BORDER_HEIGHT_P){
+    else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P &&
+            (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P){
         //qr is too far away
         controlPanel.forward();
+    }
+    else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P &&
+            (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P){
+        //qr is too close
+        controlPanel.backward();
+    }
+    else if(model.qrAdjust.r_height > (model.qrAdjust.l_height + ADJUSTED_ERROR_MARGIN_P)){
+        //qr is to the left
+        controlPanel.goLeft();
+    }
+    else if((model.qrAdjust.r_height + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.l_height){
+        //qr is to the right
+        controlPanel.goRight();
+    }
+    else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
+        //qr is to the top
+        controlPanel.down();
+    }
+    else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
+        //qr is to the bottom
+        controlPanel.up();
+    }
+    else{
+        //dont know what to do
+        controlPanel.hover();
     }
 
 }
 
-
 bool isFrontAdjusted(int r, int l, int t, int b, int c){
-    //TODO do dis
+    if (((-ADJUSTED_ERROR_MARGIN_P) < (r - l) < ADJUSTED_ERROR_MARGIN_P) &&
+            ((-ADJUSTED_ERROR_MARGIN_P) < (t - b) < ADJUSTED_ERROR_MARGIN_P) &&
+            (-1 < c < 1)){
+
+        return true;
+    }
+
     return false;
 }
 
-States_e TurnState::getNext(model_s model) {
+States_e AdjustBottomState::getNext(model_s model) {
+
+
     return NO_TRANSITION;}
 
-void TurnState::act(model_s model) { }
+void AdjustBottomState::act(model_s model) {
+
+    if(true){
+
+    }
+
+    controlPanel.hover();
+
+}
 
 States_e MatchState::getNext(model_s model) {
     return NO_TRANSITION; }

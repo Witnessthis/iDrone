@@ -3,6 +3,7 @@
 
 #include <ardrone_autonomy/Navdata.h>
 #include <iDrone/qrAdjust.h>
+#include <iDrone/afAdjust.h>
 #include <string>
 #include <ros/ros.h>
 
@@ -15,6 +16,10 @@ enum WallMarkings_e {
 
 enum AirFields_e {
     AF1_e, AF2_e, AF3_e, AF4_e, AF5_e, AF6_e, AF7_e, AF8_e, AF9_e, AF10_e, NUM_AIRFIELDS
+};
+
+enum AirFieldMatch {
+    NO_MATCH_e, BAD_MATCH_e, GOOD_MATCH_e, PERFECT_MATCH_e
 };
 
 struct WallMarking {
@@ -39,8 +44,10 @@ struct model_s{
     ardrone_autonomy::Navdata navdata;
     iDrone::qrAdjust qrAdjust;
     std::string qrSpotted;
+    iDrone::afAdjust afAdjust;
 
-    bool hasCalledFlatTrim;
+
 };
+
 
 #endif

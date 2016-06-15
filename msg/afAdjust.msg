@@ -1,0 +1,13 @@
+float32 c_x
+float32 c_y
+float32 imgc_x
+float32 imgc_y
+float32 c1_x
+float32 c1_y
+float32 c2_x
+float32 c2_y
+float32 c3_x
+float32 c3_y
+float32 c4_x
+float32 c4_y
+int32 match
