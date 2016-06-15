@@ -4,12 +4,19 @@
 #include "model.h"
 #include "ControlPanel.h"
 #include <ros/ros.h>
+#include <ctime>
+#include <chrono>
 
 #define ADJUSTED_BORDER_HEIGHT_P 400
 #define ADJUSTED_BORDER_MARGIN_P 25
 #define ADJUSTED_ERROR_MARGIN_P 15
 
+#define DIAGONAL_MOVEMENT_T 500
+#define STRAIGHT_MOVEMENT_T 750
+#define FREEZE_TIME_T 1000
+
 bool isFrontAdjusted(int r, int l, int t, int b, int c);
+bool isBottomAdjusted(int dx, int dy);
 
 class State{
 public:
@@ -21,6 +28,8 @@ public:
 };
 
 enum States_e {START_e, CALIBRATE_e, SEARCH_e, MOVE_NEW_POS_e, MOVE_e, ADJUST_FRONT_e, ADJUST_BOTTOM_e, MATCH_e, OLD_AIRFEILD_e, NEW_AIRFEILD_e, NUM_STATES, NO_TRANSITION};
+
+enum Search_Pattern_e {MOVEMENT_FREEZE, MOVEMENT1_e, MOVEMENT2_e, MOVEMENT3_e, MOVEMENT4_e, MOVEMENT5_e, MOVEMENT_COMPLETE_e};
 
 class StartState : public State{
 public:
@@ -36,6 +45,10 @@ public:
 
 class SearchState : public State{
 public:
+    //time_t start;
+    std::chrono::milliseconds start;
+    Search_Pattern_e pattern;
+    void reset();
     States_e getNext(model_s model);
     void act(model_s model);
 };

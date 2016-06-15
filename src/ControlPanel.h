@@ -19,6 +19,8 @@ public:
     void flatTrim();
     void frontCam();
     void bottomCam();
+    void diagForwardRight();
+    void diagBackwardRight();
 };
 
 #endif

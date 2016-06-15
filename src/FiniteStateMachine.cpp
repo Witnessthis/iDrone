@@ -85,6 +85,7 @@ void FiniteStateMachine::update(model_s model) {
                 break;
             case SEARCH_e:
                 searchState.mayAct = true;
+                searchState.reset();
                 break;
             case MOVE_NEW_POS_e:
                 moveNewPosState.mayAct = true;

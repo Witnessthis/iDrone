@@ -39,12 +39,15 @@ ros::ServiceClient cam_srv;
 
 iDrone::CamSelect camSelect_srv;
 
+float SpeedConstant = 0.5;
+
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 void navdataHandler(ardrone_autonomy::Navdata in_navdata);
 void wallQRHandler(iDrone::qrAdjust msg);
 void qrSpottedHandler(const std_msgs::String::ConstPtr& msg);
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg);
+void floorAFHandler(iDrone::afAdjust msg);
 
 void iDroneFSM();
 
@@ -96,14 +99,6 @@ int main(int argc, char **argv)
     model.afAdjust.c_y = -1;
     model.afAdjust.imgc_x = -1;
     model.afAdjust.imgc_y = -1;
-    model.afAdjust.c1_x = -1;
-    model.afAdjust.c1_y = -1;
-    model.afAdjust.c2_x = -1;
-    model.afAdjust.c2_y = -1;
-    model.afAdjust.c3_x = -1;
-    model.afAdjust.c3_y = -1;
-    model.afAdjust.c4_x = -1;
-    model.afAdjust.c4_y = -1;
     model.afAdjust.match = NO_MATCH_e;
 
     model.nextAirfield = AF1_e;
@@ -117,6 +112,8 @@ int main(int argc, char **argv)
     ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 10, wallQRHandler);
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
+    ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
+    ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 10, floorAFHandler);
 
     flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
@@ -194,6 +191,16 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
 
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
     //TODO publish required imageanalysis topics
+}
+
+void floorAFHandler(iDrone::afAdjust msg){
+    navLock.lock();
+    model.afAdjust;
+
+    std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
+
+    fsm.update(model);
+    navLock.unlock();
 }
 
 void iDroneFSM() {
@@ -308,7 +315,7 @@ void ControlPanel::forward(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = 1;
+    cmdT.linear.x = SpeedConstant;
     cmdT.linear.y = 0;
 
     pubLock.lock();
@@ -373,5 +380,29 @@ void ControlPanel::bottomCam() {
     camSelect_srv.request.channel = (uint8_t) 1;
 
     cam_srv.call(camSelect_srv);
+    pubLock.unlock();
+}
+
+void ControlPanel::diagForwardRight(){
+    geometry_msgs::Twist cmdT;
+    cmdT.angular.z = 0;
+    cmdT.linear.z = 0;
+    cmdT.linear.x = SpeedConstant;
+    cmdT.linear.y = (-SpeedConstant);
+
+    pubLock.lock();
+    vel_pub.publish(cmdT);
+    pubLock.unlock();
+}
+
+void ControlPanel::diagBackwardRight(){
+    geometry_msgs::Twist cmdT;
+    cmdT.angular.z = 0;
+    cmdT.linear.z = 0;
+    cmdT.linear.x = -1;
+    cmdT.linear.y = -1;
+
+    pubLock.lock();
+    vel_pub.publish(cmdT);
     pubLock.unlock();
 }

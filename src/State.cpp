@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <chrono>
 
 State::State() {
     mayAct = true;
@@ -11,7 +12,8 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
-        return MOVE_e;
+        //return MOVE_e;
+        return SEARCH_e;
     }
 
     return NO_TRANSITION;
@@ -26,8 +28,8 @@ void StartState::act(model_s model) {
 
     controlPanel.frontCam();
 
-    //controlPanel.takeOff();
-    //controlPanel.hover();
+    controlPanel.takeOff();
+    controlPanel.hover();
 }
 
 States_e CalibrateState::getNext(model_s model) {
@@ -52,7 +54,124 @@ States_e SearchState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
-void SearchState::act(model_s model) { }
+void SearchState::act(model_s model) {
+    std::chrono::milliseconds currentTime = std::chrono::duration_cast< std::chrono::milliseconds >(
+            std::chrono::system_clock::now().time_since_epoch()
+    );
+
+    std::chrono::milliseconds waitTime(1000);
+/*
+    time_t currentTime;
+    time(&currentTime);
+
+    double d = difftime(currentTime, start);*/
+
+    switch (pattern){
+        case MOVEMENT_FREEZE:
+            if((currentTime.count() - start.count()) < FREEZE_TIME_T) {
+                controlPanel.hover();
+            } else {
+                start = std::chrono::duration_cast< std::chrono::milliseconds >(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
+                pattern = MOVEMENT1_e;
+            }
+
+        case MOVEMENT1_e:
+
+            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+
+            if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
+                std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.diagForwardRight();
+                //controlPanel.forward();
+                //controlPanel.hover();
+                controlPanel.goRight();
+            }
+            else{
+                start = std::chrono::duration_cast< std::chrono::milliseconds >(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
+                pattern = MOVEMENT2_e;
+            }
+            break;
+        case MOVEMENT2_e:
+            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+
+            if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
+                std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.diagForwardRight();
+                //controlPanel.forward();
+                //controlPanel.hover();
+                controlPanel.backward();
+            }
+            else{
+                start = std::chrono::duration_cast< std::chrono::milliseconds >(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
+                pattern = MOVEMENT3_e;
+            }
+            break;
+        case MOVEMENT3_e:
+            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+
+            if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
+                std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.diagForwardRight();
+                //controlPanel.forward();
+                //controlPanel.hover();
+                controlPanel.goLeft();
+            }
+            else{
+                start = std::chrono::duration_cast< std::chrono::milliseconds >(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
+                pattern = MOVEMENT4_e;
+            }
+            break;
+        case MOVEMENT4_e:
+            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+
+            if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
+                std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.diagForwardRight();
+                //controlPanel.forward();
+                //controlPanel.hover();
+                controlPanel.forward();
+            }
+            else{
+                start = std::chrono::duration_cast< std::chrono::milliseconds >(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
+                pattern = MOVEMENT_COMPLETE_e;
+            }
+            break;
+        case MOVEMENT5_e:
+
+            break;
+        case MOVEMENT_COMPLETE_e:
+            if((currentTime.count() - start.count()) < FREEZE_TIME_T){
+                std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.diagForwardRight();
+                //controlPanel.forward();
+                //controlPanel.hover();
+                controlPanel.hover();
+            }
+            else{
+                controlPanel.land();
+            }
+
+            break;
+    }
+}
+
+void SearchState::reset() {
+    //time(&start);
+    start = std::chrono::duration_cast< std::chrono::milliseconds >(
+            std::chrono::system_clock::now().time_since_epoch()
+    );
+    pattern = MOVEMENT_FREEZE;
+}
 
 States_e MoveNewPosState::getNext(model_s model) {
 
@@ -89,12 +208,8 @@ States_e MoveState::getNext(model_s model) {
 }
 
 void MoveState::act(model_s model) {
-    //front camera
-    //controlPanel.hover();
+    controlPanel.frontCam();
     controlPanel.spinLeft();
-    //wait for opencv input (msg: r_height, i_height, c_position)
-    //adjust according to the QR code in view (center)
-
 }
 
 States_e AdjustFrontState::getNext(model_s model) {
@@ -187,14 +302,15 @@ States_e AdjustBottomState::getNext(model_s model) {
     return NO_TRANSITION;}
 
 void AdjustBottomState::act(model_s model) {
+    controlPanel.bottomCam();
 
-    if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e){
+    int delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+    int delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
+
+    if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e || isBottomAdjusted(delta_x, delta_y)){
         controlPanel.hover();
     }
     else {
-        int delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
-        int delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
-
         if(abs(delta_x) > abs(delta_y)){
             if(delta_x > 0) {
                 controlPanel.goLeft();
@@ -210,6 +326,10 @@ void AdjustBottomState::act(model_s model) {
         }
     }
  }
+
+bool isBottomAdjusted(int dx, int dy){
+    return ((abs(dx) < ADJUSTED_ERROR_MARGIN_P) && (abs(dy) < ADJUSTED_ERROR_MARGIN_P));
+}
 
 States_e MatchState::getNext(model_s model) {
     return NO_TRANSITION; }
