@@ -1,6 +1,7 @@
 #include "State.h"
 #include <iostream>
 #include <string>
+#include <cmath>
 
 State::State() {
     mayAct = true;
@@ -187,13 +188,28 @@ States_e AdjustBottomState::getNext(model_s model) {
 
 void AdjustBottomState::act(model_s model) {
 
-    if(true){
-
+    if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e){
+        controlPanel.hover();
     }
+    else {
+        int delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+        int delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
 
-    controlPanel.hover();
-
-}
+        if(abs(delta_x) > abs(delta_y)){
+            if(delta_x > 0) {
+                controlPanel.goLeft();
+            } else {
+                controlPanel.goRight();
+            }
+        } else {
+            if(delta_y > 0) {
+                controlPanel.up();
+            } else {
+                controlPanel.down();
+            }
+        }
+    }
+ }
 
 States_e MatchState::getNext(model_s model) {
     return NO_TRANSITION; }
