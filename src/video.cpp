@@ -3,6 +3,15 @@
 // Author  : Bharath Prabhuswamy
 //______________________________________________________________________________________
 
+
+
+
+/**
+ * THIS FILE IS DEPRECATED DO NOT USE IT ANYMORE, USE "identifyQR.cpp" INSTEAD OF THIS ONE.
+ */
+
+
+
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <cmath>
