@@ -13,7 +13,7 @@ OldAirfeildState oldAirfeildState;
 NewAirfeildState newAirfeildState;
 
 FiniteStateMachine::FiniteStateMachine() {
-    currentState = START_e;
+    currentState = ADJUST_FRONT_e;
 }
 
 FiniteStateMachine::~FiniteStateMachine() { }

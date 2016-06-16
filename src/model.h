@@ -29,7 +29,9 @@ struct WallMarking {
 
 struct AirField {
     bool hasLanded;
-    std::string wallMarking;
+    //std::string wallMarking;
+    int wallMarking;
+    std::string airfieldQR;
     int x;
     int y;
 };
@@ -40,6 +42,7 @@ struct model_s{
 
     AirField airfields[NUM_AIRFIELDS];
     int nextAirfield;
+    int currentWallMarking;
 
     ardrone_autonomy::Navdata navdata;
     iDrone::qrAdjust qrAdjust;
@@ -48,6 +51,5 @@ struct model_s{
 
 
 };
-
 
 #endif

@@ -12,8 +12,8 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
-        //return MOVE_e;
-        return SEARCH_e;
+        return MOVE_e;
+        //return SEARCH_e;
     }
 
     return NO_TRANSITION;
@@ -50,6 +50,12 @@ void CalibrateState::act(model_s model) {
 }
 
 States_e SearchState::getNext(model_s model) {
+    if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted){
+        return ADJUST_BOTTOM_e;
+    }
+    else if(pattern == MOVEMENT_COMPLETE_e){
+        return MOVE_e;
+    }
 
     return NO_TRANSITION;
 }
@@ -59,7 +65,7 @@ void SearchState::act(model_s model) {
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    std::chrono::milliseconds waitTime(1000);
+    //std::chrono::milliseconds waitTime(1000);
 /*
     time_t currentTime;
     time(&currentTime);
@@ -87,6 +93,7 @@ void SearchState::act(model_s model) {
                 //controlPanel.forward();
                 //controlPanel.hover();
                 controlPanel.goRight();
+
             }
             else{
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -214,13 +221,15 @@ void MoveState::act(model_s model) {
 
 States_e AdjustFrontState::getNext(model_s model) {
     //adjust the drone to center in front of the QR code
+    return NO_TRANSITION;
+
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             //find marking
             if(model.wallMarkings[i].id == model.qrAdjust.qr_id){
                 if(model.wallMarkings[i].hasBeenVisited){//old wall marking
-                    if(model.wallMarkings[i].id == model.airfields[model.nextAirfield].wallMarking){//has next airfield
+                    if(i == model.airfields[model.nextAirfield].wallMarking){//has next airfield
                         return SEARCH_e;
                     }
                     else{//does not have next airfield
@@ -242,45 +251,55 @@ void AdjustFrontState::act(model_s model) {
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         //is adjusted
-        controlPanel.hover();
+        //controlPanel.hover();
+        std::cout << "is adjusted" << std::endl;
+        //controlPanel.land();
     }
-    else if(model.qrAdjust.c_pos < 0){
+    else if(model.qrAdjust.c_pos < ADJUSTED_RIGHT_CENTER_MARGIN){
         //qr is far to the left in the image
-        controlPanel.spinLeft();
+        std::cout << "spin left" << std::endl;
+        //controlPanel.spinLeft();
     }
-    else if (model.qrAdjust.c_pos > 0){
+    else if (model.qrAdjust.c_pos > ADJUSTED_LEFT_CENTER_MARGIN){
         //qr is far to the right in the image
-        controlPanel.spinRight();
+        std::cout << "spin right" << std::endl;
+        //controlPanel.spinRight();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P){
         //qr is too far away
-        controlPanel.forward();
+        std::cout << "forward" << std::endl;
+        //controlPanel.forward();
     }
     else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P){
         //qr is too close
-        controlPanel.backward();
+        std::cout << "backward" << std::endl;
+        //controlPanel.backward();
     }
     else if(model.qrAdjust.r_height > (model.qrAdjust.l_height + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the left
-        controlPanel.goLeft();
+        std::cout << "go left" << std::endl;
+        //controlPanel.goLeft();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.l_height){
         //qr is to the right
-        controlPanel.goRight();
+        std::cout << "go right" << std::endl;
+        //controlPanel.goRight();
     }
     else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the top
-        controlPanel.down();
+        std::cout << "down" << std::endl;
+        //controlPanel.down();
     }
     else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
         //qr is to the bottom
-        controlPanel.up();
+        std::cout << "up" << std::endl;
+        //controlPanel.up();
     }
     else{
         //dont know what to do
-        controlPanel.hover();
+        //controlPanel.hover();
     }
 
 }
@@ -325,7 +344,35 @@ void AdjustBottomState::act(model_s model) {
             }
         }
     }
- }
+
+    /*
+    if(model.afAdjust.match != ""){
+        if(model.qrSpotted.qr_id == model.nextAirfield){
+            controlPanel.land();
+            model.hasVisited.push_back(model.qrSpotted.qr_id);
+            return START_e;
+        } else if(model.qrSpotted.qr_id != model.nextAirfield){
+            model.airfields->wallMarking = model.qrSpotted.qr_id; // wallmarking saved
+            model.airfields->airfieldQR = model.qrSpotted.qr_id; // airfield marking saved XXX NOT CORRECT XXX
+            model.airfields->x = model.afAdjust.imgc_x;
+            model.airfields->y = model.afAdjust.imgc_y;
+            return SEARCH_e;
+        } else if (model.nextAirfield == model.airfields->airfieldQR){
+            // go to model.airfields->wallMarking (saved wall marking) through saved x and y coordinates?
+            //controlPanel.land();
+            return START_e;
+        }else{
+            for(int k = 0; k < model.hasVisited.size(); k++){
+                if(model.qrSpotted.qr_id == model.hasVisited[k]){
+                    return SEARCH_e;
+                }
+            }
+
+        }
+    }
+     */
+
+}
 
 bool isBottomAdjusted(int dx, int dy){
     return ((abs(dx) < ADJUSTED_ERROR_MARGIN_P) && (abs(dy) < ADJUSTED_ERROR_MARGIN_P));
