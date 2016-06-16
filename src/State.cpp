@@ -12,8 +12,8 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
-        //return MOVE_e;
-        return SEARCH_e;
+        return MOVE_e;
+        //return SEARCH_e;
     }
 
     return NO_TRANSITION;
@@ -221,13 +221,15 @@ void MoveState::act(model_s model) {
 
 States_e AdjustFrontState::getNext(model_s model) {
     //adjust the drone to center in front of the QR code
-/*
+    return NO_TRANSITION;
+
+
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             //find marking
             if(model.wallMarkings[i].id == model.qrAdjust.qr_id){
                 if(model.wallMarkings[i].hasBeenVisited){//old wall marking
-                    if(model.wallMarkings[i].id == model.airfields[model.nextAirfield].wallMarking){//has next airfield
+                    if(i == model.airfields[model.nextAirfield].wallMarking){//has next airfield
                         return SEARCH_e;
                     }
                     else{//does not have next airfield
@@ -241,7 +243,7 @@ States_e AdjustFrontState::getNext(model_s model) {
             }
         }
     }
-*/
+
     return NO_TRANSITION;
 }
 

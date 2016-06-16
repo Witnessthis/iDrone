@@ -30,7 +30,7 @@ struct WallMarking {
 struct AirField {
     bool hasLanded;
     //std::string wallMarking;
-    WallMarkings_e wallMarking;
+    int wallMarking;
     std::string airfieldQR;
     int x;
     int y;

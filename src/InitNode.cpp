@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < NUM_AIRFIELDS; i++) {
         model.airfields[i].hasLanded = false;
-      //  model.airfields[i].wallMarking = "";
+        model.airfields[i].wallMarking = -1;
         model.airfields[i].x = -1;
         model.airfields[i].y = -1;
     }
@@ -126,9 +126,8 @@ int main(int argc, char **argv)
     //cv::startWindowThread();
 
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
-    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
-    ros::Subscriber wallQR_sub = nh.subscribe("wall_qr", 10, wallQRHandler);
-    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1000, qrSpottedHandler);
+    ros::Subscriber wallQR_sub = nh.subscribe("QRinfo", 10, wallQRHandler);
+    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 10, qrSpottedHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
     ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
     ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 10, floorAFHandler);
@@ -205,7 +204,7 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
         for(int i = 0; i<NUM_AIRFIELDS; i++){
             if(model.airfields[i].airfieldQR == model.qrSpotted &&
                     i != model.nextAirfield){
-               // model.airfields[i].wallMarking = model.currentWallMarking;
+                model.airfields[i].wallMarking = model.currentWallMarking;
                 //TODO coordinates
             }
         }
