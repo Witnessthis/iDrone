@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
         int counter = 0;
         int temp = i;
-        while (temp > 4){
+        while (temp > 4){ // 5 wallmarkings on each wall
             counter++;
             temp = temp - 5;
         }
@@ -85,12 +85,29 @@ int main(int argc, char **argv)
         model.wallMarkings[i].id = ss.str();
 
     }
+
+    for(int j = 0; j<NUM_AIRFIELDS; j++){
+        model.airfields[j].hasLanded = false;
+
+        int counter2 = 0;
+        int temp2 = j;
+        while(temp2 > 9){ // 10 airfields
+            counter2++;
+            temp2 = temp2 - 10;
+        }
+
+        std::stringstream airss;
+
+        airss << "AR.0" << counter2;
+        model.airfields[j].airfieldQR = airss.str();
+    }
+
     model.qrSpotted = "";
     model.hasCalibrated = false;
 
     for (int i = 0; i < NUM_AIRFIELDS; i++) {
         model.airfields[i].hasLanded = false;
-        model.airfields[i].wallMarking = "";
+      //  model.airfields[i].wallMarking = "";
         model.airfields[i].x = -1;
         model.airfields[i].y = -1;
     }
@@ -102,6 +119,7 @@ int main(int argc, char **argv)
     model.afAdjust.match = NO_MATCH_e;
 
     model.nextAirfield = AF1_e;
+    model.currentWallMarking = -1;
 
 
     //cv::namedWindow("view");
@@ -182,6 +200,24 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
     model.qrSpotted = msg->data;
 
     std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
+
+    if(fsm.currentState == SEARCH_e){
+        for(int i = 0; i<NUM_AIRFIELDS; i++){
+            if(model.airfields[i].airfieldQR == model.qrSpotted &&
+                    i != model.nextAirfield){
+               // model.airfields[i].wallMarking = model.currentWallMarking;
+                //TODO coordinates
+            }
+        }
+    }
+
+    if(model.currentWallMarking < 0){
+        for(int i = 0; i<NUM_WALL_MARKINGS; i++){
+            if(model.wallMarkings[i].id == model.qrSpotted){
+                model.currentWallMarking = i;
+            }
+        }
+    }
 
     fsm.update(model);
 

@@ -40,7 +40,7 @@ int main(int argc, char **argv){
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
     //PC camera
     //ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
-    QRData = nh.advertise<iDrone::qrAdjust>("wall_qr", 1);
+    QRData = nh.advertise<iDrone::qrAdjust>("QRinfo", 1);
     QRSpotted = nh.advertise<std_msgs::String>("qr_spotted", 1);
 
     /* Toggle to downward camera, show downward.

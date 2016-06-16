@@ -50,6 +50,12 @@ void CalibrateState::act(model_s model) {
 }
 
 States_e SearchState::getNext(model_s model) {
+    if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted){
+        return ADJUST_BOTTOM_e;
+    }
+    else if(pattern == MOVEMENT_COMPLETE_e){
+        return MOVE_e;
+    }
 
     return NO_TRANSITION;
 }
@@ -59,7 +65,7 @@ void SearchState::act(model_s model) {
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    std::chrono::milliseconds waitTime(1000);
+    //std::chrono::milliseconds waitTime(1000);
 /*
     time_t currentTime;
     time(&currentTime);
@@ -87,6 +93,7 @@ void SearchState::act(model_s model) {
                 //controlPanel.forward();
                 //controlPanel.hover();
                 controlPanel.goRight();
+
             }
             else{
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -214,7 +221,7 @@ void MoveState::act(model_s model) {
 
 States_e AdjustFrontState::getNext(model_s model) {
     //adjust the drone to center in front of the QR code
-
+/*
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             //find marking
@@ -234,7 +241,7 @@ States_e AdjustFrontState::getNext(model_s model) {
             }
         }
     }
-
+*/
     return NO_TRANSITION;
 }
 
@@ -325,7 +332,35 @@ void AdjustBottomState::act(model_s model) {
             }
         }
     }
- }
+
+    /*
+    if(model.afAdjust.match != ""){
+        if(model.qrSpotted.qr_id == model.nextAirfield){
+            controlPanel.land();
+            model.hasVisited.push_back(model.qrSpotted.qr_id);
+            return START_e;
+        } else if(model.qrSpotted.qr_id != model.nextAirfield){
+            model.airfields->wallMarking = model.qrSpotted.qr_id; // wallmarking saved
+            model.airfields->airfieldQR = model.qrSpotted.qr_id; // airfield marking saved XXX NOT CORRECT XXX
+            model.airfields->x = model.afAdjust.imgc_x;
+            model.airfields->y = model.afAdjust.imgc_y;
+            return SEARCH_e;
+        } else if (model.nextAirfield == model.airfields->airfieldQR){
+            // go to model.airfields->wallMarking (saved wall marking) through saved x and y coordinates?
+            //controlPanel.land();
+            return START_e;
+        }else{
+            for(int k = 0; k < model.hasVisited.size(); k++){
+                if(model.qrSpotted.qr_id == model.hasVisited[k]){
+                    return SEARCH_e;
+                }
+            }
+
+        }
+    }
+     */
+
+}
 
 bool isBottomAdjusted(int dx, int dy){
     return ((abs(dx) < ADJUSTED_ERROR_MARGIN_P) && (abs(dy) < ADJUSTED_ERROR_MARGIN_P));
