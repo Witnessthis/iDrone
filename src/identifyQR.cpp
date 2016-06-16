@@ -171,10 +171,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
     }
 
-    if(!(decodedQr == "")){
-        QRData.publish(qrOut);
-        QRSpotted.publish(qrSpotted);
-    }
+
+    QRData.publish(qrOut);
+    QRSpotted.publish(qrSpotted);
+
 
     imshow("Image",cv_ptr->image);
     // clean up
