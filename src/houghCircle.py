@@ -59,6 +59,8 @@ def callback(image):
     # calculate center of the image and draw a circle to show it
     height = np.size(processImage, 0) / 2
     width = np.size(processImage, 1) / 2
+
+    # show center of image with a small purple'ish circle
     cv2.circle(processImage, (width, height), 5, (105, 0, 150), 3)
 
     # make sure there are circles found in the image
