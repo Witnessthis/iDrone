@@ -35,6 +35,8 @@ const int CV_QR_EAST = 1;
 const int CV_QR_SOUTH = 2;
 const int CV_QR_WEST = 3;
 
+int contourRect = 0;
+
 float cv_distance(Point2f P, Point2f Q);					// Get Distance between two points
 float cv_lineEquation(Point2f L, Point2f M, Point2f J);		// Perpendicular Distance of a Point J from line formed by Points L and M; Solution to equation of the line Val = ax+by+c 
 float cv_lineSlope(Point2f L, Point2f M, int& alignement);	// Slope of a line by two Points L and M on it; Slope of line, S = (x1 -x2) / (y1- y2)
@@ -489,6 +491,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 					mark = mark + 1 ;
 					}
+                    else{
+                        contourRect = i;
+                    }
 
 				}
 
@@ -730,14 +735,14 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		//for testing
 		RNG rng(12345);
 		Mat drawing = Mat::zeros( edges.size(), CV_8UC3 );
-		for( int i = 0; i< contours.size(); i++ )
-		{
+/*		for( int i = 0; i< contours.size(); i++ )
+		{*/
 			Scalar color = Scalar( 255, 0, 0);
-			drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
-		}
+			drawContours( drawing, contours, contourRect, color, 2, 8, hierarchy, 0, Point() );
+		//}
 
-		imshow ( "Image", cv_ptr->image);
-		//imshow ( "Image", drawing);
+		//imshow ( "Image", cv_ptr->image);
+		imshow ( "Image", drawing);
 		imshow ( "Traces", traces );
 		imshow ( "QR code", qr_balanced );
 

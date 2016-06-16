@@ -207,3 +207,10 @@ target_link_libraries( qr_video ${OpenCV_LIBS} )
 target_link_libraries(qr_video ${catkin_LIBRARIES})
 target_link_libraries (qr_video ${ZBAR_LIBRARIES} zbar)
 add_dependencies(qr_video $($(iDrone)_EXPORTED_TARGETS))
+
+add_executable( identifyQR src/identifyQR.cpp)
+target_link_libraries(identifyQR 
+			${OpenCV_LIBS} 
+			${catkin_LIBRARIES} 
+			${ZBAR_LIBRARIES} zbar)
+add_dependencies(identifyQR $($(iDrone)_EXPORTED_TARGETS))
