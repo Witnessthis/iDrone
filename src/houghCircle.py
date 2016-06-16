@@ -23,16 +23,16 @@ from iDrone.msg import afAdjust
 # comment all videos above and uncomment this for webcam video
 #capture_device = cv2.VideoCapture(0)
 
-# subscribe on bottom_ardrone_camera
+# Optional setting for width and height, uncomment to activate
+#capture_device.set(3,640)
+#capture_device.set(4,360)
 
 def callback(image):
+    # instantiate cvbridge and convert raw feed to cv image
     br = CvBridge()
     processImage = br.imgmsg_to_cv2(image, "bgr8")
 
-    # Start capturing frame by frame
-    # ret, frame = capture_device.read()
-    # load current image, copy it for outputting with circle and convert it to grayscale for processing
-    # output_image = cv_image
+    # convert image to grayscale for processing
     grayscale_image = cv2.cvtColor(processImage, cv2.COLOR_BGR2GRAY)
 
     # apply blurs to remove noice, experimenting with gaussian and median blur currently
@@ -60,6 +60,7 @@ def callback(image):
     height = np.size(processImage, 0) / 2
     width = np.size(processImage, 1) / 2
     cv2.circle(processImage, (width, height), 5, (105, 0, 150), 3)
+
     # make sure there are circles found in the image
     if circles_detect is not None:
         # convert the (x, y) coordinates and radius of the circles found to integers
@@ -76,36 +77,43 @@ def callback(image):
 
             # publish the coordinates of the circle
             pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
-#            rospy.init_node('houghCircle', anonymous=True)
+
+            # setup a delay for processing
             rate = rospy.Rate(10)  # 10hz
+
+            # setup the message type to publish and assign values
             coordinate_msg = afAdjust()
             coordinate_msg.c_x = float(width - x)
             coordinate_msg.c_y = float(height - y)
             coordinate_msg.imgc_x = float(width / 2)
             coordinate_msg.imgc_y = float(height / 2)
             coordinate_msg.match = 2
+
+            # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
+
+            # sleep rate ms
             rate.sleep()
 
     # display the processed image and the output image for relation
     cv2.imshow('Output Image', processImage)
     cv2.imshow('Processed grayscale Image', grayscale_image)
+
+    # keep frame alive
     cv2.waitKey(1)
 
-
-# Optional setting for width and height, uncomment to activate
-#capture_device.set(3,640)
-#capture_device.set(4,360)
-
 def main(args):
-  rospy.init_node('houghCircle', anonymous=True)
-  rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback)
-  try:
-    rospy.spin()
-  except KeyboardInterrupt:
-    print("Shutting down")
-  cv2.destroyAllWindows()
+    # initialize node
+    rospy.init_node('houghCircle', anonymous=True)
+
+    # subscribe on bottom_ardrone_camera
+    rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback)
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main(sys.argv)
