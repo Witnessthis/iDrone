@@ -39,7 +39,8 @@ ros::ServiceClient cam_srv;
 
 iDrone::CamSelect camSelect_srv;
 
-float SpeedConstant = 0.25;
+float TurnSpeed = 0.25;
+float MoveSpeed = 0.25;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -278,7 +279,7 @@ void ControlPanel::hover(){
 
 void ControlPanel::spinLeft(){
     geometry_msgs::Twist cmdT;
-    cmdT.angular.z = 0.25;
+    cmdT.angular.z = TurnSpeed;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
@@ -289,7 +290,7 @@ void ControlPanel::spinLeft(){
 
 void ControlPanel::spinRight(){
     geometry_msgs::Twist cmdT;
-    cmdT.angular.z = -0.25;
+    cmdT.angular.z = (-TurnSpeed);
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
@@ -303,7 +304,7 @@ void ControlPanel::goLeft(){
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
-    cmdT.linear.y = 1;
+    cmdT.linear.y = MoveSpeed;
 
     pubLock.lock();
     vel_pub.publish(cmdT);
@@ -315,7 +316,7 @@ void ControlPanel::goRight(){
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
-    cmdT.linear.y = -1;
+    cmdT.linear.y = (-MoveSpeed);
 
     pubLock.lock();
     vel_pub.publish(cmdT);
@@ -331,7 +332,7 @@ void ControlPanel::land(){
 void ControlPanel::up(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
-    cmdT.linear.z = 1;
+    cmdT.linear.z = TurnSpeed;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
 
@@ -343,7 +344,7 @@ void ControlPanel::up(){
 void ControlPanel::down(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
-    cmdT.linear.z = -1;
+    cmdT.linear.z = (-TurnSpeed);
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
 
@@ -356,7 +357,7 @@ void ControlPanel::forward(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = SpeedConstant;
+    cmdT.linear.x = MoveSpeed;
     cmdT.linear.y = 0;
 
     pubLock.lock();
@@ -368,7 +369,7 @@ void ControlPanel::backward(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = -1;
+    cmdT.linear.x = (-MoveSpeed);
     cmdT.linear.y = 0;
 
     pubLock.lock();
@@ -428,8 +429,8 @@ void ControlPanel::diagForwardRight(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = SpeedConstant;
-    cmdT.linear.y = (-SpeedConstant);
+    cmdT.linear.x = MoveSpeed;
+    cmdT.linear.y = (-MoveSpeed);
 
     pubLock.lock();
     vel_pub.publish(cmdT);

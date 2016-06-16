@@ -216,11 +216,16 @@ States_e MoveState::getNext(model_s model) {
 
 void MoveState::act(model_s model) {
     controlPanel.frontCam();
-    controlPanel.spinLeft();
+    //controlPanel.spinLeft();
+    controlPanel.hover();
 }
 
 States_e AdjustFrontState::getNext(model_s model) {
     //adjust the drone to center in front of the QR code
+    if(model.qrAdjust.qr_id == ""){
+        return MOVE_e;
+    }
+
     return NO_TRANSITION;
 
 
@@ -251,68 +256,79 @@ void AdjustFrontState::act(model_s model) {
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         //is adjusted
-        //controlPanel.hover();
+        controlPanel.hover();
         std::cout << "is adjusted" << std::endl;
         //controlPanel.land();
     }
-    else if(model.qrAdjust.c_pos < ADJUSTED_RIGHT_CENTER_MARGIN){
+    else if(model.qrAdjust.c_pos < ADJUSTED_LEFT_CENTER_MARGIN){
         //qr is far to the left in the image
         std::cout << "spin left" << std::endl;
-        //controlPanel.spinLeft();
+        controlPanel.spinLeft();
+        controlPanel.hover();
     }
-    else if (model.qrAdjust.c_pos > ADJUSTED_LEFT_CENTER_MARGIN){
+    else if (model.qrAdjust.c_pos > ADJUSTED_RIGHT_CENTER_MARGIN){
         //qr is far to the right in the image
         std::cout << "spin right" << std::endl;
-        //controlPanel.spinRight();
+        controlPanel.spinRight();
+        controlPanel.hover();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P){
         //qr is too far away
         std::cout << "forward" << std::endl;
-        //controlPanel.forward();
+        controlPanel.forward();
+        controlPanel.hover();
     }
     else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P){
         //qr is too close
         std::cout << "backward" << std::endl;
-        //controlPanel.backward();
+        controlPanel.backward();
+        controlPanel.hover();
     }
     else if(model.qrAdjust.r_height > (model.qrAdjust.l_height + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the left
         std::cout << "go left" << std::endl;
-        //controlPanel.goLeft();
+        controlPanel.goLeft();
+        controlPanel.hover();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.l_height){
         //qr is to the right
         std::cout << "go right" << std::endl;
-        //controlPanel.goRight();
+        controlPanel.goRight();
+        controlPanel.hover();
     }
     else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the top
         std::cout << "down" << std::endl;
-        //controlPanel.down();
+        controlPanel.down();
     }
     else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
         //qr is to the bottom
         std::cout << "up" << std::endl;
-        //controlPanel.up();
+        controlPanel.up();
     }
     else{
         //dont know what to do
-        //controlPanel.hover();
+        std::cout << "i am confuse" << std::endl;
+        controlPanel.hover();
     }
 
 }
 
 bool isFrontAdjusted(int r, int l, int t, int b, int c){
+    return (((-ADJUSTED_ERROR_MARGIN_P) < (r - l) < ADJUSTED_ERROR_MARGIN_P) &&
+            ((-ADJUSTED_ERROR_MARGIN_P) < (t - b) < ADJUSTED_ERROR_MARGIN_P) &&
+            (ADJUSTED_LEFT_CENTER_MARGIN < c < ADJUSTED_RIGHT_CENTER_MARGIN));
+/*
     if (((-ADJUSTED_ERROR_MARGIN_P) < (r - l) < ADJUSTED_ERROR_MARGIN_P) &&
             ((-ADJUSTED_ERROR_MARGIN_P) < (t - b) < ADJUSTED_ERROR_MARGIN_P) &&
-            (-1 < c < 1)){
+            (ADJUSTED_LEFT_CENTER_MARGIN < c < ADJUSTED_RIGHT_CENTER_MARGIN)){
 
         return true;
     }
 
-    return false;
+    return false;*/
 }
 
 States_e AdjustBottomState::getNext(model_s model) {
