@@ -8,7 +8,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <limits>
-#include <zbarQR/qrAdjust.h>
+#include <iDrone/qrAdjust.h>
 #include <string>
 #include <std_msgs/String.h>
 
@@ -36,10 +36,10 @@ int main(int argc, char **argv){
     image_transport::ImageTransport it(nh);
 
     //Front camera
-    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
+    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 10, imageCallback);
     //PC camera
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
-    QRData = nh.advertise<zbarQR::qrAdjust>("wall_qr", 1);
+    //ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
+    QRData = nh.advertise<iDrone::qrAdjust>("wall_qr", 1);
     QRSpotted = nh.advertise<std_msgs::String>("qr_spotted", 1);
 
     /* Toggle to downward camera, show downward.
@@ -65,7 +65,8 @@ int main(int argc, char **argv){
 void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     cv_bridge::CvImagePtr cv_ptr;
 
-    zbarQR::qrAdjust qrOut;
+
+    iDrone::qrAdjust qrOut;
     std_msgs::String qrSpotted;
     cv_ptr = cv_bridge::toCvCopy(msg, enc::BGR8);
 
