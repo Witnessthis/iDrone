@@ -343,20 +343,31 @@ void AdjustBottomState::act(model_s model) {
     int delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
 
     if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e || isBottomAdjusted(delta_x, delta_y)){
-        controlPanel.hover();
+        if(isBottomAdjusted(delta_x, delta_y)){
+            //std::cout << "is adjusted" << std::endl;
+        }
+        else{
+            std::cout << "no match" << std::endl;
+        }
+
+        //controlPanel.hover();
     }
     else {
         if(abs(delta_x) > abs(delta_y)){
             if(delta_x > 0) {
-                controlPanel.goLeft();
+                std::cout << "go left" << std::endl;
+                //controlPanel.goLeft();
             } else {
-                controlPanel.goRight();
+                std::cout << "go right" << std::endl;
+                //controlPanel.goRight();
             }
         } else {
             if(delta_y > 0) {
-                controlPanel.up();
+                std::cout << "forward" << std::endl;
+                //controlPanel.forward();
             } else {
-                controlPanel.down();
+                std::cout << "backward" << std::endl;
+                //controlPanel.backward();
             }
         }
     }
@@ -391,7 +402,8 @@ void AdjustBottomState::act(model_s model) {
 }
 
 bool isBottomAdjusted(int dx, int dy){
-    return ((abs(dx) < ADJUSTED_ERROR_MARGIN_P) && (abs(dy) < ADJUSTED_ERROR_MARGIN_P));
+    //std::cout << "dx, dy" << dx << ", " << dy << std::endl;
+    return ((abs(dx) < ADJUSTED_BOTTOM_MARGIN) && (abs(dy) < ADJUSTED_BOTTOM_MARGIN));
 }
 
 States_e MatchState::getNext(model_s model) {

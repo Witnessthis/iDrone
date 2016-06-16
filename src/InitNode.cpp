@@ -237,7 +237,7 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 
 void floorAFHandler(iDrone::afAdjust msg){
     navLock.lock();
-    model.afAdjust;
+    model.afAdjust = msg;
 
     std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
 
