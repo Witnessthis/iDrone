@@ -118,19 +118,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
             if (i == 0) {
                 leftLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
-                qrOut.l = leftLength;
+                qrOut.l_height = leftLength;
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(255,0,0),3);
                 cout << "leftlength: " << leftLength << endl;
             }
             else if (i == 1) {
                 botLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
-                qrOut.b_height = botLength;
+                qrOut.b_length = botLength;
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,255,0),3);
                 cout << "botLength: " << botLength << endl;
             }
             else if (i == 2) {
                 rightLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
-                qrOut.r_length = rightLength;
+                qrOut.r_height = rightLength;
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,255),3);
                 cout << "rightlength: " << rightLength << endl;
             }
