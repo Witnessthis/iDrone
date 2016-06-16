@@ -251,45 +251,55 @@ void AdjustFrontState::act(model_s model) {
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         //is adjusted
-        controlPanel.hover();
+        //controlPanel.hover();
+        std::cout << "is adjusted" << std::endl;
+        //controlPanel.land();
     }
-    else if(model.qrAdjust.c_pos < 0){
+    else if(model.qrAdjust.c_pos < ADJUSTED_RIGHT_CENTER_MARGIN){
         //qr is far to the left in the image
-        controlPanel.spinLeft();
+        std::cout << "spin left" << std::endl;
+        //controlPanel.spinLeft();
     }
-    else if (model.qrAdjust.c_pos > 0){
+    else if (model.qrAdjust.c_pos > ADJUSTED_LEFT_CENTER_MARGIN){
         //qr is far to the right in the image
-        controlPanel.spinRight();
+        std::cout << "spin right" << std::endl;
+        //controlPanel.spinRight();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P){
         //qr is too far away
-        controlPanel.forward();
+        std::cout << "forward" << std::endl;
+        //controlPanel.forward();
     }
     else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P &&
             (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P){
         //qr is too close
-        controlPanel.backward();
+        std::cout << "backward" << std::endl;
+        //controlPanel.backward();
     }
     else if(model.qrAdjust.r_height > (model.qrAdjust.l_height + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the left
-        controlPanel.goLeft();
+        std::cout << "go left" << std::endl;
+        //controlPanel.goLeft();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.l_height){
         //qr is to the right
-        controlPanel.goRight();
+        std::cout << "go right" << std::endl;
+        //controlPanel.goRight();
     }
     else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the top
-        controlPanel.down();
+        std::cout << "down" << std::endl;
+        //controlPanel.down();
     }
     else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
         //qr is to the bottom
-        controlPanel.up();
+        std::cout << "up" << std::endl;
+        //controlPanel.up();
     }
     else{
         //dont know what to do
-        controlPanel.hover();
+        //controlPanel.hover();
     }
 
 }

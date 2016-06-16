@@ -39,7 +39,7 @@ ros::ServiceClient cam_srv;
 
 iDrone::CamSelect camSelect_srv;
 
-float SpeedConstant = 0.5;
+float SpeedConstant = 0.25;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -126,11 +126,11 @@ int main(int argc, char **argv)
     //cv::startWindowThread();
 
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
-    ros::Subscriber wallQR_sub = nh.subscribe("QRinfo", 10, wallQRHandler);
-    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 10, qrSpottedHandler);
+    ros::Subscriber wallQR_sub = nh.subscribe("QRinfo", 1, wallQRHandler);
+    ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1, qrSpottedHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
     ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
-    ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 10, floorAFHandler);
+    ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, floorAFHandler);
 
     flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
@@ -185,6 +185,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 void wallQRHandler(iDrone::qrAdjust msg){
     std::cout << "qr wall msg recieved" << std::endl;
+    std::cout << msg.r_height << std::endl;
+    std::cout << msg.l_height << std::endl;
+    std::cout << msg.t_length << std::endl;
+    std::cout << msg.b_length << std::endl;
+    std::cout << msg.c_pos << std::endl;
+    std::cout << msg.qr_id << std::endl;
 
     navLock.lock();
     model.qrAdjust = msg;
