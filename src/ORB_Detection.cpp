@@ -24,6 +24,8 @@ using namespace std;
 
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg);
 
+int message;
+
 ros::Publisher chatter_pub;
 std::vector <cv::Point2f> scene_corners(4);
 
@@ -34,7 +36,7 @@ float compare_max_value = 20;
 float compare_min_value = -20;
 float compare_max_value2 = 4;
 float compare_min_value2 = -4;
-Mat templateImage, image2, image1_gray, image2_gray;
+Mat templateImage;
 
 // TODO: Change the string in the loadPicture() method, to the path to your string location
 
@@ -50,7 +52,7 @@ Mat templateImage, image2, image1_gray, image2_gray;
  * 3: 3
  */
 
-int computeMatch(Mat image1) {
+Mat computeMatch(Mat image1) {
     int status_corner0_x=1, status_corner0_y=1, status_corner1_x=1, status_corner1_y=1,
             status_corner2_x=1, status_corner2_y=1, status_corner3_x=1, status_corner3_y=1;
     bool accepted0 = false, accepted1 = false, accepted2 = false, accepted3 = false;
@@ -61,14 +63,6 @@ int computeMatch(Mat image1) {
 
     float corner_x_average, corner_y_average;
     finalPoint = cv::Point2f(0,0);
-    centerPoint = cv::Point2f(image1.cols/2, image1.rows/2);
-    std::vector <cv::Point2f> crosshairPoints(4);
-
-    crosshairPoints[0]= cv::Point2f(image1.cols/2, 0);
-    crosshairPoints[1]= cv::Point2f(image1.cols/2, image1.rows);
-    crosshairPoints[2]= cv::Point2f(0, image1.rows/2);
-    crosshairPoints[3]= cv::Point2f(image1.cols, image1.rows/2);
-
     std::vector <cv::Point2f> goodMatches_corners(4);
     corner_x_average = (corner_x_max / 4);
     corner_y_average = (corner_y_max / 4);
@@ -180,7 +174,8 @@ int computeMatch(Mat image1) {
 
     if ((status_corner0_x + status_corner0_y + status_corner1_x + status_corner1_y +
             status_corner2_x + status_corner2_y + status_corner3_x + status_corner3_y) < 4) {
-        return 2;
+        message = 1;
+        return image1;
     }
 
     cout << "accepted coordinates: \n";
@@ -259,20 +254,15 @@ int computeMatch(Mat image1) {
         circle(image1, finalPoint, 20, cv::Scalar(255, 255, 0), 5, 8, 0);
         circle(image1, finalPoint, 3, cv::Scalar(255, 255, 0), 5, 8, 0);
         cout << finalPoint.x << ", " << finalPoint.y << "\n";
+        message = 2;
+    } else {
+        finalPoint = Point2f(0,0);
+        message = 1;
     }
-    // draw picture center and crosshair
-    //circle(image1, centerPoint, 3, cv::Scalar(255, 0, 255), 5, 8, 0);
-    cv::line(image1, crosshairPoints[0], crosshairPoints[1], cv::Scalar(255, 0, 255), 3);
-    cv::line(image1, crosshairPoints[2], crosshairPoints[3], cv::Scalar(255, 0, 255), 3);
-
-
-    imshow("result", image1);
-
-    int message = 1;
-    return message;
+    return image1;
 }
 
-int ORBTemplateMatch(Mat image1, Mat image2) {
+Mat ORBTemplateMatch(Mat image1, Mat image2) {
 
     std::vector<cv::KeyPoint> keypoints_templ, keypoints_frame;
     Mat descriptors_object, descriptors_scene;
@@ -336,23 +326,26 @@ int ORBTemplateMatch(Mat image1, Mat image2) {
             if (image2.data) {
                 return computeMatch(image2);
             }
-            return 3;
-
-
+            message = 0;
+            return image2;
         } else {
-            imshow("result", image2);
-            return 3;
+            message = 0;
+            return image2;
         }
     }
-
-    return 3;
+    message = 0;
+    return image2;
 }
 
 
-Mat loadPicture(){
+Mat loadPicture(String imageToLoad){
     Mat picture;
     // TODO: Change this string to the path to your string location
-    picture = imread("/home/jonas/catkin_ws/src/iDrone/src/Template.png");
+    if (imageToLoad=="default") {
+        picture = imread("/home/praem/catkin_ws/src/iDrone/src/Template.png");
+    } else {
+        picture = imread(imageToLoad);
+    }
     return picture;
 }
 
@@ -373,39 +366,52 @@ Mat loadFrame(int framenumber) {
     picture = imread(picturepath);
     return picture;
 }
+void runImageLoop(Mat imageToAnalysis) {
+    if (!imageToAnalysis.data) {
+        //cout << "Could not run simulation \n" << std::endl;
+        return;
+    }
+    centerPoint = cv::Point2f(imageToAnalysis.cols/2, imageToAnalysis.rows/2);
+    std::vector <cv::Point2f> crosshairPoints(4);
+    crosshairPoints[0]= cv::Point2f(imageToAnalysis.cols/2, 0);
+    crosshairPoints[1]= cv::Point2f(imageToAnalysis.cols/2, imageToAnalysis.rows);
+    crosshairPoints[2]= cv::Point2f(0, imageToAnalysis.rows/2);
+    crosshairPoints[3]= cv::Point2f(imageToAnalysis.cols, imageToAnalysis.rows/2);
+
+    imageToAnalysis.convertTo(imageToAnalysis, CV_8U);
+    cvtColor(imageToAnalysis, imageToAnalysis, CV_BGR2GRAY);
+    blur(imageToAnalysis, imageToAnalysis, Size(3, 3));
+
+    Mat resultImage = ORBTemplateMatch(templateImage, imageToAnalysis);
+
+    // ROS message
+    iDrone::afAdjust msg;
+    String str_result = static_cast<ostringstream*>( &(ostringstream() << message) )->str();
+    cout << str_result <<"\n";
+    msg.match = message;
+    msg.c_x = finalPoint.x;
+    msg.c_y = finalPoint.y;
+    msg.imgc_x = centerPoint.x;
+    msg.imgc_y = centerPoint.y;
+    ROS_INFO("%i %f %f %f %f", message, finalPoint.x, finalPoint.y, centerPoint.x, centerPoint.y);
+    chatter_pub.publish(msg);
+
+    // draw picture center and crosshair
+    circle(resultImage, centerPoint, 3, cv::Scalar(255, 0, 255), 5, 8, 0);
+    cv::line(resultImage, crosshairPoints[0], crosshairPoints[1], cv::Scalar(255, 0, 255), 3);
+    cv::line(resultImage, crosshairPoints[2], crosshairPoints[3], cv::Scalar(255, 0, 255), 3);
+
+    cv::imshow("result", resultImage);
+
+}
 
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
-    cv::namedWindow("result",  WINDOW_NORMAL);
-
+    Mat inputImage;
     cv_bridge::CvImagePtr cv_ptr;
     try {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        image2 = cv_ptr->image;
-        if (!image2.data) {
-            //cout << "Could not run simulation \n" << std::endl;
-            return;
-        }
-        image2.convertTo(image2, CV_8U);
-        cvtColor(image2, image2_gray, CV_BGR2GRAY);
-        blur(image2_gray, image2_gray, Size(3, 3));
-
-        int result = ORBTemplateMatch(image1_gray, image2_gray);
-
-        cv::imshow("result", image2_gray);
-
-        // ROS message
-            iDrone::afAdjust msg;
-            //std::stringstream ss;
-            //ss << result;
-            String str_result;
-            //str_result = static_cast<ostringstream*>( &(ostringstream() << result) )->str();
-            msg.match = result;
-            msg.c_x = finalPoint.x;
-            msg.c_y = finalPoint.y;
-            msg.imgc_x = centerPoint.x;
-            msg.imgc_y = centerPoint.y;
-            ROS_INFO("%i %f %f %f %f", result, finalPoint.x, finalPoint.y, centerPoint.x, centerPoint.y);
-            chatter_pub.publish(msg);
+        inputImage = cv_ptr->image;
+        runImageLoop(inputImage);
     } catch(cv_bridge::Exception& e) {
         ROS_ERROR("could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
@@ -414,8 +420,6 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 
 int main(int argc, char* argv[])
 {
-    //namedWindow("frameWindow", WINDOW_NORMAL);
-    //namedWindow("resultWindow", WINDOW_NORMAL);
     namedWindow("result", WINDOW_NORMAL);
 
     // Init ros
@@ -423,19 +427,20 @@ int main(int argc, char* argv[])
     ros::NodeHandle n;
     chatter_pub = n.advertise<iDrone::afAdjust>("ORB_Detection", 1000);
     String argc_str = static_cast<ostringstream*>( &(ostringstream() << argc) )->str();
+
+    templateImage = loadPicture("default");
+    if (!templateImage.data)
+    {
+        cout << "Could not open or find template image, try to change the path in the source code \n" << std::endl;
+        return -1;
+    }
+    templateImage.convertTo(templateImage, CV_8U);
+    cvtColor(templateImage, templateImage, CV_BGR2GRAY);
+    blur(templateImage, templateImage, Size(3, 3));
+
     if (argc < 2) {
         // Running without arguments
         // Standard run procedure
-        // Change this string to the path to your string location
-        templateImage = loadPicture();
-        if (!templateImage.data)
-        {
-            cout << "Could not open or find template image, try to change the path in the source code \n" << std::endl;
-            return -1;
-        }
-        templateImage.convertTo(templateImage, CV_8U);
-        cvtColor(templateImage, image1_gray, CV_BGR2GRAY);
-        blur(image1_gray, image1_gray, Size(3, 3));
 
         ros::Subscriber bottomImageRaw = n.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
         cout << "Subscribed to ardrone bottom camera\n";
@@ -444,18 +449,8 @@ int main(int argc, char* argv[])
 
     } else if (argc == 2){
         // Running with arguments
-        templateImage = loadPicture();
-        if (!templateImage.data)
-        {
-            cout << "Could not open or find template image \n" << std::endl;
-            return -1;
-        }
-        templateImage.convertTo(templateImage, CV_8U);
-        cvtColor(templateImage, image1_gray, CV_BGR2GRAY);
-        blur(image1_gray, image1_gray, Size(3, 3));
         String command = argv[1];
         cout << "running with command: " << command << "\n";
-
 
         if (command == "run") {
             cout << "Started subscribing on drone camera \n";
@@ -466,64 +461,21 @@ int main(int argc, char* argv[])
         else if (command == "debug") {
             cout << "running debug mode \n";
             int counter = 0;
+            Mat loadedFrameImage;
             while (1) {
-                image2 = loadFrame(counter);
-                if (!image2.data) {
-                    cout << "Could not run or continue simulation, no frame found \n" << std::endl;
-                    break;
-                }
-                image2.convertTo(image2, CV_8U);
-                cvtColor(image2, image2_gray, CV_BGR2GRAY);
-                blur(image2_gray, image2_gray, Size(3, 3));
-
-                int result = ORBTemplateMatch(image1_gray, image2_gray);
+                loadedFrameImage = loadFrame(counter);
+                runImageLoop(loadedFrameImage);
                 counter++;
-
-                // ROS message
-                iDrone::afAdjust msg;
-                //std::stringstream ss;
-                //ss << result;
-                //str_result = static_cast<ostringstream*>( &(ostringstream() << result) )->str();
-                msg.match = result;
-                msg.c_x = finalPoint.x;
-                msg.c_y = finalPoint.y;
-                msg.imgc_x = centerPoint.x;
-                msg.imgc_y = centerPoint.y;
-                ROS_INFO("%i %f %f %f %f", msg.match, msg.c_x, msg.c_y, msg.imgc_x, msg.imgc_y);
-                chatter_pub.publish(msg);
                 ros::spinOnce();
-
                 waitKey(0);
-
             }
         }
 
         else {
-            image2 = loadPicture();
-            if (!image2.data) {
-                cout << "Could not open or find template image \n" << std::endl;
-                return -1;
-            }
-            image2.convertTo(image2, CV_8U);
-            cvtColor(image2, image2_gray, CV_BGR2GRAY);
-            blur(image2_gray, image2_gray, Size(3, 3));
-
-            int result = ORBTemplateMatch(image1_gray, image2_gray);
-
-            // ROS message
-            iDrone::afAdjust msg;
-            //std::stringstream ss;
-            //ss << result;
-            //str_result = static_cast<ostringstream*>( &(ostringstream() << result) )->str();
-            msg.match = result;
-            msg.c_x = finalPoint.x;
-            msg.c_y = finalPoint.y;
-            msg.imgc_x = centerPoint.x;
-            msg.imgc_y = centerPoint.y;
-            ROS_INFO("%i %f %f %f %f", msg.match, msg.c_x, msg.c_y, msg.imgc_x, msg.imgc_y);
+            Mat inputImage = loadPicture(command);
+            runImageLoop(inputImage);
             waitKey(0);
         }
-        
     }
     return 0;
 }
