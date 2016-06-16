@@ -65,21 +65,21 @@ while(True):
             cv2.rectangle(output_image, (x-5,y-5),(x+5,y+5),(0,150,250),-1)
 
             # delay the image showing to be able to notice the drawings on the output image
-#            time.sleep(0.5)
+            #            time.sleep(0.5)
 
             # publish the coordinates of the circle
             pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
             rospy.init_node('houghCircle', anonymous=True)
             rate = rospy.Rate(10)  # 10hz
             #while not rospy.is_shutdown():
-#            coordinates_string = "\nX-middle: " + str(width) + "\nY-middle: " + str(height)
-#            coordinates_string = coordinates_string + "\nX-coordinate: " + str(x / 2) + "\nY-coordinate: " +  str(y / 2) + "\nCircle Radius: " + str(r / 2) + "\n"
-#            coordinates_string = coordinates_string + "\nOffset x-coordinate: " + str(width - x) + "\nOffset y-coordinate: " + str(height-y) + "\n\n"
+            #            coordinates_string = "\nX-middle: " + str(width) + "\nY-middle: " + str(height)
+            #            coordinates_string = coordinates_string + "\nX-coordinate: " + str(x / 2) + "\nY-coordinate: " +  str(y / 2) + "\nCircle Radius: " + str(r / 2) + "\n"
+            #            coordinates_string = coordinates_string + "\nOffset x-coordinate: " + str(width - x) + "\nOffset y-coordinate: " + str(height-y) + "\n\n"
             coordinate_msg = afAdjust()
-            coordinate_msg.c_x = width - x
-            coordinate_msg.c_y = height - y
-            coordinate_msg.imgc_x = str(width/2)
-            coordinate_msg.imgc_y = str(height/2)
+            coordinate_msg.c_x = float(width - x)
+            coordinate_msg.c_y = float(height - y)
+            coordinate_msg.imgc_x = float(width/2)
+            coordinate_msg.imgc_y = float(height/2)
             coordinate_msg.match = 2
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
@@ -88,7 +88,7 @@ while(True):
 
             # print the found (x, y) coordinate and radius of the given circle
 
-      #      print coordinates_string
+            #      print coordinates_string
 
     # display the processed image and the output image for relation
     cv2.imshow('Processed grayscale Image', grayscale_image)
