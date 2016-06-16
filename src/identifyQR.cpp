@@ -117,28 +117,28 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         for(int i=0;i<vp.size();i++) {
 
             if (i == 0) {
-                botLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
-                qrOut.b_length = botLength;
-                line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(255,0,0),3);
-                cout << "botLength: " << botLength << endl;
-            }
-            else if (i == 1) {
                 leftLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 qrOut.l_height = leftLength;
+                line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(255,0,0),3);
+                cout << "leftlength: " << leftLength << endl;
+            }
+            else if (i == 1) {
+                botLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
+                qrOut.b_length = botLength;
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,255,0),3);
-                cout << "leftLength: " << leftLength << endl;
+                cout << "botLength: " << botLength << endl;
             }
             else if (i == 2) {
-                topLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
-                qrOut.t_length = topLength;
-                line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,255),3);
-                cout << "topLength: " << topLength << endl;
-            }
-            else if (i == 3) {
                 rightLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 qrOut.r_height = rightLength;
+                line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,255),3);
+                cout << "rightlength: " << rightLength << endl;
+            }
+            else if (i == 3) {
+                topLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
+                qrOut.t_length = topLength;
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,0),3);
-                cout << "rightLength: " << rightLength << endl;
+                cout << "toplength: " << topLength << endl;
             }
 
             circle(cv_ptr->image, Point(centerx,centery), 4, Scalar(0,0,255), 2, 8, 0);
@@ -171,10 +171,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
     }
 
-    if(!(decodedQr == "")){
-        QRData.publish(qrOut);
-        QRSpotted.publish(qrSpotted);
-    }
+
+    QRData.publish(qrOut);
+    QRSpotted.publish(qrSpotted);
+
 
     imshow("Image",cv_ptr->image);
     // clean up
