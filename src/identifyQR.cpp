@@ -36,10 +36,10 @@ int main(int argc, char **argv){
     image_transport::ImageTransport it(nh);
 
     //Front camera
-    ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 10, imageCallback);
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
+    //ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 10, imageCallback);
+    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
     //PC camera
-    //ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
+    ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
     QRData = nh.advertise<iDrone::qrAdjust>("QRinfo", 1);
     QRSpotted = nh.advertise<std_msgs::String>("qr_spotted", 1);
 
@@ -82,6 +82,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     int width = cv_ptr->image.cols;
     int height = cv_ptr->image.rows;
 
+    line(cv_ptr->image,Point(width/2,height),Point(width/2,0),Scalar(0,0,0),1);
+    line(cv_ptr->image,Point(width,height/2),Point(0,height/2),Scalar(0,0,0),1);
+
     int32_t topLength;
     int32_t botLength;
     int32_t leftLength;
@@ -107,9 +110,60 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         cout << "decoded " << symbol->get_type_name()
         << " symbol \"" << symbol->get_data() << '"' <<" "<< endl;
         int n = symbol->get_location_size();
+
         for(int i=0;i<n;i++){
             vp.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
         }
+
+
+        //Keeps QR upright for proper data.
+
+        vector<Point> sortedPointsByNumber;
+        sortedPointsByNumber = vp;
+        bool unordered = true;
+        Point tempPoint;
+
+        for (int i = 0 ; i<sortedPointsByNumber.size();i++){
+            for (int k = 0 ; k<sortedPointsByNumber.size()-1 ; k++){
+            if(sortedPointsByNumber[k].y > sortedPointsByNumber[k+1].y ) {
+                tempPoint = sortedPointsByNumber[k+1];
+                sortedPointsByNumber[k+1] = sortedPointsByNumber[k];
+                sortedPointsByNumber[k] = tempPoint;
+            }
+            }
+        }
+
+        vector<Point> sortedPoints (4);
+
+
+        if(sortedPointsByNumber[0].x < sortedPointsByNumber[1].x) {
+            sortedPoints[0] = sortedPointsByNumber[0];
+            sortedPoints[3] = sortedPointsByNumber[1];
+        }
+        else{
+            sortedPoints[3] = sortedPointsByNumber[0];
+            sortedPoints[0] = sortedPointsByNumber[1];
+        }
+
+        if(sortedPointsByNumber[2].x < sortedPointsByNumber[3].x) {
+            sortedPoints[1] = sortedPointsByNumber[2];
+            sortedPoints[2] = sortedPointsByNumber[3];
+        }
+        else {
+            sortedPoints[2] = sortedPointsByNumber[2];
+            sortedPoints[1] = sortedPointsByNumber[3];
+        }
+
+
+
+
+        vp=sortedPoints;
+
+
+
+
+
+
 
         centerx = (vp[0].x + vp[1].x + vp[2].x + vp[3].x)/4;
         centery = (vp[0].y + vp[1].y + vp[2].y + vp[3].y)/4;
