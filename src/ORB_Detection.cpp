@@ -371,38 +371,40 @@ void runImageLoop(Mat imageToAnalysis) {
         //cout << "Could not run simulation \n" << std::endl;
         return;
     }
-    centerPoint = cv::Point2f(imageToAnalysis.cols/2, imageToAnalysis.rows/2);
-    std::vector <cv::Point2f> crosshairPoints(4);
-    crosshairPoints[0]= cv::Point2f(imageToAnalysis.cols/2, 0);
-    crosshairPoints[1]= cv::Point2f(imageToAnalysis.cols/2, imageToAnalysis.rows);
-    crosshairPoints[2]= cv::Point2f(0, imageToAnalysis.rows/2);
-    crosshairPoints[3]= cv::Point2f(imageToAnalysis.cols, imageToAnalysis.rows/2);
+        centerPoint = cv::Point2f(imageToAnalysis.cols / 2, imageToAnalysis.rows / 2);
+        std::vector <cv::Point2f> crosshairPoints(4);
+        crosshairPoints[0] = cv::Point2f(imageToAnalysis.cols / 2, 0);
+        crosshairPoints[1] = cv::Point2f(imageToAnalysis.cols / 2, imageToAnalysis.rows);
+        crosshairPoints[2] = cv::Point2f(0, imageToAnalysis.rows / 2);
+        crosshairPoints[3] = cv::Point2f(imageToAnalysis.cols, imageToAnalysis.rows / 2);
 
-    imageToAnalysis.convertTo(imageToAnalysis, CV_8U);
-    cvtColor(imageToAnalysis, imageToAnalysis, CV_BGR2GRAY);
-    blur(imageToAnalysis, imageToAnalysis, Size(3, 3));
+        imageToAnalysis.convertTo(imageToAnalysis, CV_8U);
+        cvtColor(imageToAnalysis, imageToAnalysis, CV_BGR2GRAY);
+        blur(imageToAnalysis, imageToAnalysis, Size(3, 3));
+        Mat resultImage;
+        try {
+            resultImage = ORBTemplateMatch(templateImage, imageToAnalysis);
+        } catch (Exception e) {
+            return;
+        }
+        // ROS message
+        iDrone::afAdjust msg;
+        //String str_result = static_cast<ostringstream*>( &(ostringstream() << message) )->str();
+        //cout << str_result <<"\n";
+        msg.match = message;
+        msg.c_x = finalPoint.x;
+        msg.c_y = finalPoint.y;
+        msg.imgc_x = centerPoint.x;
+        msg.imgc_y = centerPoint.y;
+        ROS_INFO("%i %f %f %f %f", message, finalPoint.x, finalPoint.y, centerPoint.x, centerPoint.y);
+        chatter_pub.publish(msg);
 
-    Mat resultImage = ORBTemplateMatch(templateImage, imageToAnalysis);
+        // draw picture center and crosshair
+        circle(resultImage, centerPoint, 3, cv::Scalar(255, 0, 255), 5, 8, 0);
+        cv::line(resultImage, crosshairPoints[0], crosshairPoints[1], cv::Scalar(255, 0, 255), 3);
+        cv::line(resultImage, crosshairPoints[2], crosshairPoints[3], cv::Scalar(255, 0, 255), 3);
 
-    // ROS message
-    iDrone::afAdjust msg;
-    String str_result = static_cast<ostringstream*>( &(ostringstream() << message) )->str();
-    cout << str_result <<"\n";
-    msg.match = message;
-    msg.c_x = finalPoint.x;
-    msg.c_y = finalPoint.y;
-    msg.imgc_x = centerPoint.x;
-    msg.imgc_y = centerPoint.y;
-    ROS_INFO("%i %f %f %f %f", message, finalPoint.x, finalPoint.y, centerPoint.x, centerPoint.y);
-    chatter_pub.publish(msg);
-
-    // draw picture center and crosshair
-    circle(resultImage, centerPoint, 3, cv::Scalar(255, 0, 255), 5, 8, 0);
-    cv::line(resultImage, crosshairPoints[0], crosshairPoints[1], cv::Scalar(255, 0, 255), 3);
-    cv::line(resultImage, crosshairPoints[2], crosshairPoints[3], cv::Scalar(255, 0, 255), 3);
-
-    cv::imshow("result", resultImage);
-
+        cv::imshow("result", resultImage);
 }
 
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
