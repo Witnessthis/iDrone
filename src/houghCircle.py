@@ -11,22 +11,6 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from iDrone.msg import afAdjust
 
-
-# list of current videos in folder, comment current and uncomment another for testing
-#capture_device = cv2.VideoCapture('../videos/hallo.avi')
-#capture_device = cv2.VideoCapture('../videos/hej.avi')
-#capture_device = cv2.VideoCapture('../videos/whatever.avi')
-#capture_device = cv2.VideoCapture('../videos/flight_1.mp4')
-#capture_device = cv2.VideoCapture('../videos/VideoTest1.avi')
-#capture_device = cv2.VideoCapture('../videos/flight.mp4')
-
-# comment all videos above and uncomment this for webcam video
-#capture_device = cv2.VideoCapture(0)
-
-# Optional setting for width and height, uncomment to activate
-#capture_device.set(3,640)
-#capture_device.set(4,360)
-
 def callback(image):
     # instantiate cvbridge and convert raw feed to cv image
     br = CvBridge()
@@ -35,7 +19,7 @@ def callback(image):
     # convert image to grayscale for processing
     grayscale_image = cv2.cvtColor(processImage, cv2.COLOR_BGR2GRAY)
 
-    # apply blurs to remove noice, experimenting with gaussian and median blur currently
+    # apply blurs to remove noice and smoothen the image, experimenting with gaussian and median blur currently
     grayscale_image = cv2.GaussianBlur(grayscale_image, (5, 5), 0);
     grayscale_image = cv2.medianBlur(grayscale_image, 5)
 
@@ -75,14 +59,8 @@ def callback(image):
             cv2.circle(processImage, (x, y), r, (0, 200, 50), 4)
             cv2.rectangle(processImage, (x - 5, y - 5), (x + 5, y + 5), (0, 150, 250), -1)
 
-            # delay the image showing to be able to notice the drawings on the output image
-            #            time.sleep(0.5)
-
             # publish the coordinates of the circle
             pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
-
-            # setup a delay for processing
-            #rate = rospy.Rate(10)  # 10hz
 
             # setup the message type to publish and assign values
             coordinate_msg = afAdjust()
@@ -98,9 +76,6 @@ def callback(image):
             # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
-
-            # sleep rate ms
-            #rate.sleep()
 
     # display the processed image and the output image for relation
     cv2.imshow('Output Image', processImage)
