@@ -11,6 +11,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from iDrone.msg import afAdjust
 
+
 def callback(image):
     # instantiate cvbridge and convert raw feed to cv image
     br = CvBridge()
@@ -19,7 +20,7 @@ def callback(image):
     # convert image to grayscale for processing
     grayscale_image = cv2.cvtColor(processImage, cv2.COLOR_BGR2GRAY)
 
-    # apply blurs to remove noice and smoothen the image, experimenting with gaussian and median blur currently
+    # apply blurs to remove noice, experimenting with gaussian and median blur currently
     grayscale_image = cv2.GaussianBlur(grayscale_image, (5, 5), 0);
     grayscale_image = cv2.medianBlur(grayscale_image, 5)
 
@@ -41,7 +42,7 @@ def callback(image):
     circles_detect = cv2.HoughCircles(grayscale_image, cv2.HOUGH_GRADIENT, 0.5, 246, param1=330, param2=63,
                                       minRadius=0, maxRadius=180)
 
-    # calculate center of the image and draw a circle to show it
+    # calculate center of the image, save height and width coordinates
     height = np.size(processImage, 0) / 2
     width = np.size(processImage, 1) / 2
 
@@ -66,20 +67,17 @@ def callback(image):
             coordinate_msg = afAdjust()
             coordinate_msg.c_x = float(width - x)
             coordinate_msg.c_y = float(height - y)
-            coordinate_msg.imgc_x = float(width / 2)
-            coordinate_msg.imgc_y = float(height / 2)
+            coordinate_msg.imgc_x = float(width)
+            coordinate_msg.imgc_y = float(height)
             coordinate_msg.match = 2
-
-            # print diameter of the circle to terminal
-            print "Diameter of circle: " + str(r * 2)
 
             # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
 
     # display the processed image and the output image for relation
-    cv2.imshow('Output Image', processImage)
-    cv2.imshow('Processed grayscale Image', grayscale_image)
+    #cv2.imshow('Output Image', processImage)
+    #cv2.imshow('Processed grayscale Image', grayscale_image)
 
     # keep frame alive
     cv2.waitKey(1)
