@@ -21,6 +21,7 @@ public:
     void bottomCam();
     void diagForwardRight();
     void diagBackwardRight();
+    void updateSearchState();
 };
 
 #endif

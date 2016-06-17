@@ -36,10 +36,10 @@ int main(int argc, char **argv){
     image_transport::ImageTransport it(nh);
 
     //Front camera
-    //ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 10, imageCallback);
-    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 10, imageCallback);
+    ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, imageCallback);
+    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, imageCallback);
     //PC camera
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
+    //ros::Subscriber frontImageRaw_sub = nh.subscribe("camera/image_raw", 5, imageCallback);
     QRData = nh.advertise<iDrone::qrAdjust>("QRinfo", 1);
     QRSpotted = nh.advertise<std_msgs::String>("qr_spotted", 1);
 

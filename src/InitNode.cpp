@@ -40,7 +40,7 @@ ros::ServiceClient cam_srv;
 iDrone::CamSelect camSelect_srv;
 
 float TurnSpeed = 0.25;
-float MoveSpeed = 0.25;
+float MoveSpeed = 1.0;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -238,7 +238,7 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 void floorAFHandler(iDrone::afAdjust msg){
     navLock.lock();
     model.afAdjust = msg;
-
+/*
     std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
     std::cout << "c_x : "  << model.afAdjust.c_x << std::endl;
     std::cout << "c_y: "  << model.afAdjust.c_y << std::endl;
@@ -250,7 +250,7 @@ void floorAFHandler(iDrone::afAdjust msg){
 
     std::cout << "delta x: "  << delta_x << std::endl;
     std::cout << "delta y: "  << delta_y << std::endl;
-
+*/
     fsm.update(model);
     navLock.unlock();
 }
@@ -457,4 +457,8 @@ void ControlPanel::diagBackwardRight(){
     pubLock.lock();
     vel_pub.publish(cmdT);
     pubLock.unlock();
+}
+
+void ControlPanel::updateSearchState() {
+    model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
 }

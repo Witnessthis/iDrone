@@ -12,8 +12,10 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
-        return MOVE_e;
-        //return SEARCH_e;
+        //return MOVE_e;
+        //return ADJUST_BOTTOM_e;
+        return SEARCH_e;
+        //return ADJUST_FRONT_e;
     }
 
     return NO_TRANSITION;
@@ -50,50 +52,64 @@ void CalibrateState::act(model_s model) {
 }
 
 States_e SearchState::getNext(model_s model) {
-    if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted){
+    if(model.afAdjust.match > 1){//model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted){
         return ADJUST_BOTTOM_e;
     }
     else if(pattern == MOVEMENT_COMPLETE_e){
+        controlPanel.updateSearchState();
         return MOVE_e;
     }
-
+/*
+    if(model.navdata.altd >= 2000){
+        controlPanel.hover();
+        return ADJUST_BOTTOM_e;
+    }
+*/
     return NO_TRANSITION;
 }
 
 void SearchState::act(model_s model) {
+    controlPanel.bottomCam();
+
     std::chrono::milliseconds currentTime = std::chrono::duration_cast< std::chrono::milliseconds >(
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    //std::chrono::milliseconds waitTime(1000);
-/*
-    time_t currentTime;
-    time(&currentTime);
+    std::cout << "altitude: " << model.navdata.altd << std::endl;
 
-    double d = difftime(currentTime, start);*/
+    //time_t currentTime;
+    //time(&currentTime);
+
+    //double d = difftime(currentTime, start);
 
     switch (pattern){
         case MOVEMENT_FREEZE:
-            if((currentTime.count() - start.count()) < FREEZE_TIME_T) {
-                controlPanel.hover();
+            if((currentTime.count() - start.count()) < FREEZE_TIME_T){
+                    controlPanel.hover();
             } else {
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
                         std::chrono::system_clock::now().time_since_epoch()
                 );
+                pattern = MOVEMENT_UP_e;
+            }
+            break;
+        case MOVEMENT_UP_e:
+            if(model.navdata.altd < 2000){
+                controlPanel.up();
+            }else {
+                start = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()
+                );
                 pattern = MOVEMENT1_e;
             }
-
+            break;
         case MOVEMENT1_e:
 
             std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
                 std::cout << "search state: " << pattern << std::endl;
-                //controlPanel.diagForwardRight();
-                //controlPanel.forward();
-                //controlPanel.hover();
                 controlPanel.goRight();
-
             }
             else{
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -107,9 +123,6 @@ void SearchState::act(model_s model) {
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
                 std::cout << "search state: " << pattern << std::endl;
-                //controlPanel.diagForwardRight();
-                //controlPanel.forward();
-                //controlPanel.hover();
                 controlPanel.backward();
             }
             else{
@@ -124,9 +137,6 @@ void SearchState::act(model_s model) {
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
                 std::cout << "search state: " << pattern << std::endl;
-                //controlPanel.diagForwardRight();
-                //controlPanel.forward();
-                //controlPanel.hover();
                 controlPanel.goLeft();
             }
             else{
@@ -141,9 +151,6 @@ void SearchState::act(model_s model) {
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
                 std::cout << "search state: " << pattern << std::endl;
-                //controlPanel.diagForwardRight();
-                //controlPanel.forward();
-                //controlPanel.hover();
                 controlPanel.forward();
             }
             else{
@@ -159,9 +166,6 @@ void SearchState::act(model_s model) {
         case MOVEMENT_COMPLETE_e:
             if((currentTime.count() - start.count()) < FREEZE_TIME_T){
                 std::cout << "search state: " << pattern << std::endl;
-                //controlPanel.diagForwardRight();
-                //controlPanel.forward();
-                //controlPanel.hover();
                 controlPanel.hover();
             }
             else{
@@ -190,7 +194,7 @@ void MoveNewPosState::act(model_s model) { }
 States_e MoveState::getNext(model_s model) {
     std::cout << "id: " << model.qrSpotted << std::endl;
 
-    if(model.qrSpotted == ""){
+    if(model.qrSpotted == "" || model.navdata.altd < 1400){
         return NO_TRANSITION;
     }
 
@@ -215,19 +219,36 @@ States_e MoveState::getNext(model_s model) {
 }
 
 void MoveState::act(model_s model) {
+
+
     controlPanel.frontCam();
-    //controlPanel.spinLeft();
-    controlPanel.hover();
+
+    if(model.navdata.altd < 1400){
+        controlPanel.up();
+    }
+    else if(model.navdata.altd > 1600){
+        controlPanel.down();
+    }
+    else{
+        controlPanel.spinLeft();
+        controlPanel.hover();
+    }
+
 }
 
 States_e AdjustFrontState::getNext(model_s model) {
     //adjust the drone to center in front of the QR code
-    if(model.qrAdjust.qr_id == ""){
+    time_t currentTime;
+    time(&currentTime);
+
+    if(model.qrAdjust.qr_id == "" && difftime(currentTime, start) > 2){
         return MOVE_e;
     }
 
-    return NO_TRANSITION;
+    if(model.qrAdjust.qr_id != ""){
 
+        time(&start);
+    }
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
@@ -253,6 +274,10 @@ States_e AdjustFrontState::getNext(model_s model) {
 }
 
 void AdjustFrontState::act(model_s model) {
+    time_t currentTime;
+    time(&currentTime);
+
+    std::cout << "time elapsed: " << difftime(currentTime, start) << std::endl;
 
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         //is adjusted
@@ -272,16 +297,28 @@ void AdjustFrontState::act(model_s model) {
         controlPanel.spinRight();
         controlPanel.hover();
     }
-    else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P &&
-            (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < ADJUSTED_BORDER_HEIGHT_P){
+    else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
+        //qr is to the top
+        std::cout << "down" << std::endl;
+        controlPanel.down();
+    }
+    else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
+        //qr is to the bottom
+        std::cout << "up" << std::endl;
+        controlPanel.up();
+    }
+    else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p &&
+            (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p){
         //qr is too far away
+        std::cout <<"adjusted_border_height_p: " << adjusted_border_height_p << std::endl;
         std::cout << "forward" << std::endl;
         controlPanel.forward();
         controlPanel.hover();
     }
-    else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P &&
-            (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > ADJUSTED_BORDER_HEIGHT_P){
+    else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p &&
+            (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p){
         //qr is too close
+        std::cout <<"adjusted_border_height_p: " << adjusted_border_height_p << std::endl;
         std::cout << "backward" << std::endl;
         controlPanel.backward();
         controlPanel.hover();
@@ -298,37 +335,33 @@ void AdjustFrontState::act(model_s model) {
         controlPanel.goRight();
         controlPanel.hover();
     }
-    else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
-        //qr is to the top
-        std::cout << "down" << std::endl;
-        controlPanel.down();
-    }
-    else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
-        //qr is to the bottom
-        std::cout << "up" << std::endl;
-        controlPanel.up();
-    }
     else{
         //dont know what to do
         std::cout << "i am confuse" << std::endl;
         controlPanel.hover();
+
+        return;
     }
 
 }
 
-bool isFrontAdjusted(int r, int l, int t, int b, int c){
-    return (((-ADJUSTED_ERROR_MARGIN_P) < (r - l) < ADJUSTED_ERROR_MARGIN_P) &&
-            ((-ADJUSTED_ERROR_MARGIN_P) < (t - b) < ADJUSTED_ERROR_MARGIN_P) &&
-            (ADJUSTED_LEFT_CENTER_MARGIN < c < ADJUSTED_RIGHT_CENTER_MARGIN));
-/*
-    if (((-ADJUSTED_ERROR_MARGIN_P) < (r - l) < ADJUSTED_ERROR_MARGIN_P) &&
-            ((-ADJUSTED_ERROR_MARGIN_P) < (t - b) < ADJUSTED_ERROR_MARGIN_P) &&
-            (ADJUSTED_LEFT_CENTER_MARGIN < c < ADJUSTED_RIGHT_CENTER_MARGIN)){
+void AdjustFrontState::reset(){
+    time(&start);
+}
 
-        return true;
-    }
+bool isFrontAdjusted(int r, int l, int t, int b, float c){
+    bool centerLeft = !(c < ADJUSTED_LEFT_CENTER_MARGIN);
+    bool centerRight = !(c > ADJUSTED_RIGHT_CENTER_MARGIN);
+    bool forward = !((r + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p &&
+     (l + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p);
+    bool backward = !((r - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p &&
+                     (l - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p);
+    bool left = !(r > (l + ADJUSTED_ERROR_MARGIN_P));
+    bool right = !((r + ADJUSTED_ERROR_MARGIN_P) < l);
+    bool down = !(t > (b + ADJUSTED_ERROR_MARGIN_P));
+    bool up = !((t + ADJUSTED_ERROR_MARGIN_P) < b);
 
-    return false;*/
+    return centerLeft & centerRight & forward & backward & left & right & down & up;
 }
 
 States_e AdjustBottomState::getNext(model_s model) {
@@ -345,34 +378,41 @@ void AdjustBottomState::act(model_s model) {
     if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e || isBottomAdjusted(delta_x, delta_y)){
         if(isBottomAdjusted(delta_x, delta_y)){
             std::cout << "is adjusted" << std::endl;
+
+            controlPanel.land();
         }
         else{
             std::cout << "no match" << std::endl;
         }
 
-        //controlPanel.hover();
+        controlPanel.hover();
+
     }
-        /*
+
 
     else {
         if(abs(delta_x) > abs(delta_y)){
-            if(delta_x > 0) {
+            if(delta_x < 0) {
                 std::cout << "go left" << std::endl;
-                //controlPanel.goLeft();
+                controlPanel.goLeft();
+                controlPanel.hover();
             } else {
                 std::cout << "go right" << std::endl;
-                //controlPanel.goRight();
+                controlPanel.goRight();
+                controlPanel.hover();
             }
         } else {
-            if(delta_y > 0) {
+            if(delta_y < 0) {
                 std::cout << "forward" << std::endl;
-                //controlPanel.forward();
+                controlPanel.forward();
+                controlPanel.hover();
             } else {
                 std::cout << "backward" << std::endl;
-                //controlPanel.backward();
+                controlPanel.backward();
+                controlPanel.hover();
             }
         }
-    }*/
+    }
 
     /*
     if(model.afAdjust.match != ""){
@@ -422,3 +462,8 @@ States_e NewAirfeildState::getNext(model_s model) {
     return NO_TRANSITION; }
 
 void NewAirfeildState::act(model_s model) { }
+
+int cmToPixel(int cm){
+
+    return (-2.1*(10^-13)*pow(cm, 7)) + (2.3*(10^-10)*pow(cm, 6)) - (1.1*(10^-7)*pow(cm, 5)) + (2.9*(10^-5)*pow(cm, 4)) - (0.0045*pow(cm, 3)) + (0.44*pow(cm, 2)) - (26*cm) - (8.3*(10^2));
+}
