@@ -2,13 +2,51 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/ORB_Detection.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/identifyQR.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/FiniteStateMachine.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/video.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/State.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/FiniteStateMachine.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/InitNode.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/State.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/setup.py" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/package.xml" isTestSource="false" />
+    </content>
+    <content url="file:///usr/src/gtest">
+      <sourceFolder url="file:///usr/src/gtest/src/gtest_main.cc" isTestSource="false" />
+      <sourceFolder url="file:///usr/src/gtest/src/gtest-all.cc" isTestSource="false" />
+      <sourceFolder url="file:///usr/src/gtest/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file:///usr/src/gtest/cmake/internal_utils.cmake" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
       <library name="Header Search Paths">
-        <CLASSES />
-        <SOURCES />
+        <CLASSES>
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
+          <root url="file:///usr/include" />
+          <root url="file:///usr/local/include" />
+          <root url="file:///opt/ros/indigo/include" />
+          <root url="file://$MODULE_DIR$/../../devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/MinSizeRel0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/Debug0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/Release0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/RelWithDebInfo0/devel/include" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
+          <root url="file:///usr/include" />
+          <root url="file:///usr/local/include" />
+          <root url="file:///opt/ros/indigo/include" />
+          <root url="file://$MODULE_DIR$/../../devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/MinSizeRel0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/Debug0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/Release0/devel/include" />
+          <root url="file://$USER_HOME$/.CLion2016.1/system/cmake/generated/iDrone-e1ae7c41/e1ae7c41/RelWithDebInfo0/devel/include" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>

@@ -350,7 +350,7 @@ Mat loadPicture(String imageToLoad){
     Mat picture;
     // TODO: Change this string to the path to your string location
     if (imageToLoad=="default") {
-        picture = imread("/home/praem/catkin_ws/src/iDrone/src/Template.png");
+        picture = imread("/home/lime/catkin_ws/src/iDrone/src/Template.png");
     } else {
         picture = imread(imageToLoad);
     }

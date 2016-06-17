@@ -13,7 +13,7 @@ OldAirfeildState oldAirfeildState;
 NewAirfeildState newAirfeildState;
 
 FiniteStateMachine::FiniteStateMachine() {
-    currentState = ADJUST_BOTTOM_e;
+    currentState = START_e;
 }
 
 FiniteStateMachine::~FiniteStateMachine() { }
@@ -95,6 +95,7 @@ void FiniteStateMachine::update(model_s model) {
                 break;
             case ADJUST_FRONT_e:
                 adjustFrontState.mayAct = true;
+                adjustFrontState.reset();
                 break;
             case ADJUST_BOTTOM_e:
                 adjustBottomState.mayAct = true;
