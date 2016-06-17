@@ -91,6 +91,9 @@ def callback(image):
             coordinate_msg.imgc_y = float(height / 2)
             coordinate_msg.match = 2
 
+            # print diameter of the circle to terminal
+            print "Diameter of circle: " + str(r * 2)
+
             # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
