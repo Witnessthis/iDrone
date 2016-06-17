@@ -81,7 +81,7 @@ def callback(image):
             pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
 
             # setup a delay for processing
-            rate = rospy.Rate(10)  # 10hz
+            #rate = rospy.Rate(10)  # 10hz
 
             # setup the message type to publish and assign values
             coordinate_msg = afAdjust()
@@ -99,7 +99,7 @@ def callback(image):
             pub.publish(coordinate_msg)
 
             # sleep rate ms
-            rate.sleep()
+            #rate.sleep()
 
     # display the processed image and the output image for relation
     cv2.imshow('Output Image', processImage)
