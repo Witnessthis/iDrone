@@ -81,7 +81,7 @@ def callback(image):
             pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
 
             # setup a delay for processing
-            rate = rospy.Rate(10)  # 10hz
+            #rate = rospy.Rate(10)  # 10hz
 
             # setup the message type to publish and assign values
             coordinate_msg = afAdjust()
@@ -91,12 +91,15 @@ def callback(image):
             coordinate_msg.imgc_y = float(height / 2)
             coordinate_msg.match = 2
 
+            # print diameter of the circle to terminal
+            print "Diameter of circle: " + str(r * 2)
+
             # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
 
             # sleep rate ms
-            rate.sleep()
+            #rate.sleep()
 
     # display the processed image and the output image for relation
     cv2.imshow('Output Image', processImage)
@@ -110,7 +113,7 @@ def main(args):
     rospy.init_node('houghCircle', anonymous=True)
 
     # subscribe on bottom_ardrone_camera
-    rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback)
+    rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback, queue_size = 1)
     try:
         rospy.spin()
     except KeyboardInterrupt:
