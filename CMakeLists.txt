@@ -222,6 +222,6 @@ target_link_libraries(identifyQR
 add_dependencies(identifyQR $($(iDrone)_EXPORTED_TARGETS))
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-add_executable(ORB_Detection src/ORB_Detection.cpp src/)
+add_executable(ORB_Detection src/ORB_Detection.cpp)
 target_link_libraries(ORB_Detection ${catkin_LIBRARIES})
 add_dependencies(ORB_Detection $($(iDrone)_EXPORTED_TARGETS))
