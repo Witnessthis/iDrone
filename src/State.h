@@ -19,7 +19,7 @@
 #define FREEZE_TIME_T 1000
 
 bool isFrontAdjusted(int r, int l, int t, int b, int c);
-bool isBottomAdjusted(int dx, int dy);
+bool isBottomAdjusted(float dx, float dy);
 
 class State{
 public:

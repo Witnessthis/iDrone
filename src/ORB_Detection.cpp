@@ -405,6 +405,7 @@ void runImageLoop(Mat imageToAnalysis) {
         cv::line(resultImage, crosshairPoints[2], crosshairPoints[3], cv::Scalar(255, 0, 255), 3);
 
         cv::imshow("result", resultImage);
+        waitKey(3);
 }
 
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
@@ -422,11 +423,17 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 
 int main(int argc, char* argv[])
 {
-    namedWindow("result", WINDOW_NORMAL);
+
 
     // Init ros
     ros::init(argc, argv, "talker");
     ros::NodeHandle n;
+
+    namedWindow("result");
+    startWindowThread();
+
+    image_transport::ImageTransport it(n);
+
     chatter_pub = n.advertise<iDrone::afAdjust>("ORB_Detection", 1000);
     String argc_str = static_cast<ostringstream*>( &(ostringstream() << argc) )->str();
 
@@ -479,5 +486,6 @@ int main(int argc, char* argv[])
             waitKey(0);
         }
     }
+    cv::destroyWindow("result");
     return 0;
 }

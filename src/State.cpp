@@ -339,12 +339,12 @@ States_e AdjustBottomState::getNext(model_s model) {
 void AdjustBottomState::act(model_s model) {
     controlPanel.bottomCam();
 
-    int delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
-    int delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
+    float delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+    float delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
 
     if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e || isBottomAdjusted(delta_x, delta_y)){
         if(isBottomAdjusted(delta_x, delta_y)){
-            //std::cout << "is adjusted" << std::endl;
+            std::cout << "is adjusted" << std::endl;
         }
         else{
             std::cout << "no match" << std::endl;
@@ -352,6 +352,8 @@ void AdjustBottomState::act(model_s model) {
 
         //controlPanel.hover();
     }
+        /*
+
     else {
         if(abs(delta_x) > abs(delta_y)){
             if(delta_x > 0) {
@@ -370,7 +372,7 @@ void AdjustBottomState::act(model_s model) {
                 //controlPanel.backward();
             }
         }
-    }
+    }*/
 
     /*
     if(model.afAdjust.match != ""){
@@ -401,7 +403,7 @@ void AdjustBottomState::act(model_s model) {
 
 }
 
-bool isBottomAdjusted(int dx, int dy){
+bool isBottomAdjusted(float dx, float dy){
     //std::cout << "dx, dy" << dx << ", " << dy << std::endl;
     return ((abs(dx) < ADJUSTED_BOTTOM_MARGIN) && (abs(dy) < ADJUSTED_BOTTOM_MARGIN));
 }

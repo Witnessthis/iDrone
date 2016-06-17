@@ -240,6 +240,16 @@ void floorAFHandler(iDrone::afAdjust msg){
     model.afAdjust = msg;
 
     std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
+    std::cout << "c_x : "  << model.afAdjust.c_x << std::endl;
+    std::cout << "c_y: "  << model.afAdjust.c_y << std::endl;
+    std::cout << "imgc_x: "  << model.afAdjust.imgc_x << std::endl;
+    std::cout << "imgc_y: "  << model.afAdjust.imgc_y << std::endl;
+
+    float delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+    float delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
+
+    std::cout << "delta x: "  << delta_x << std::endl;
+    std::cout << "delta y: "  << delta_y << std::endl;
 
     fsm.update(model);
     navLock.unlock();
