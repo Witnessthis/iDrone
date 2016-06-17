@@ -113,7 +113,7 @@ def main(args):
     rospy.init_node('houghCircle', anonymous=True)
 
     # subscribe on bottom_ardrone_camera
-    rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback)
+    rospy.Subscriber("/ardrone/bottom/image_raw", Image, callback, queue_size = 1)
     try:
         rospy.spin()
     except KeyboardInterrupt:
