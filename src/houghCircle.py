@@ -44,6 +44,7 @@ def callback(image):
                                             cv2.THRESH_BINARY,
                                             11, 3.5)
 
+    # instantiate matrix for image processing
     kernel = np.ones((2.6, 2.7), np.uint8)
 
     # erode the grayscale image
