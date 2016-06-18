@@ -216,7 +216,7 @@ Mat computeMatch(Mat image1) {
         } else {
             int lengthDenierCounter = 0;
             for (int i = 0; i<4; i++) {
-                if (lengths[i]<100.0) lengthDenierCounter++;
+                if (lengths[i]<200.0) lengthDenierCounter++;
             }
 
             if (lengthDenierCounter == 4) {
