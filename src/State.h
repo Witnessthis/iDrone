@@ -8,18 +8,18 @@
 #include <chrono>
 
 #define ADJUSTED_BORDER_HEIGHT_CM 150 //TODO: fix this naming issue!!!  this value NEEDS to be between 40 - 250.
-#define ADJUSTED_BORDER_MARGIN_P 10
-#define ADJUSTED_ERROR_MARGIN_P 2
-#define ADJUSTED_BOTTOM_MARGIN 100
-#define ADJUSTED_RIGHT_CENTER_MARGIN 0.3
-#define ADJUSTED_LEFT_CENTER_MARGIN -0.3
+#define ADJUSTED_BORDER_MARGIN_P 5
+#define ADJUSTED_ERROR_MARGIN_P 0
+#define ADJUSTED_BOTTOM_MARGIN 50
+#define ADJUSTED_RIGHT_CENTER_MARGIN 0.2
+#define ADJUSTED_LEFT_CENTER_MARGIN -0.2
 
 int cmToPixel(int cm);
 
-const int adjusted_border_height_p = 116;//cmToPixel(ADJUSTED_BORDER_HEIGHT_CM);
+const int adjusted_border_height_p = 78;//cmToPixel(ADJUSTED_BORDER_HEIGHT_CM);
 
-#define STRAIGHT_MOVEMENT_T 750
-#define FREEZE_TIME_T 1000
+#define STRAIGHT_MOVEMENT_T 1000
+#define FREEZE_TIME_T 5000
 
 bool isFrontAdjusted(int r, int l, int t, int b, float c);
 bool isBottomAdjusted(float dx, float dy);

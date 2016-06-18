@@ -49,6 +49,7 @@ void wallQRHandler(iDrone::qrAdjust msg);
 void qrSpottedHandler(const std_msgs::String::ConstPtr& msg);
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg);
 void floorAFHandler(iDrone::afAdjust msg);
+void ORBhandler(iDrone::afAdjust msg);
 
 void iDroneFSM();
 
@@ -89,18 +90,22 @@ int main(int argc, char **argv)
 
     for(int j = 0; j<NUM_AIRFIELDS; j++){
         model.airfields[j].hasLanded = false;
-
+/*
         int counter2 = 0;
         int temp2 = j;
         while(temp2 > 9){ // 10 airfields
             counter2++;
             temp2 = temp2 - 10;
-        }
+        }*/
 
         std::stringstream airss;
 
-        airss << "AR.0" << counter2;
+        airss << "AR.0" << j;
         model.airfields[j].airfieldQR = airss.str();
+
+        std::cout << model.airfields[j].airfieldQR << std::endl;
+
+        model.airfields[j].wallMarking = -1;
     }
 
     model.qrSpotted = "";
@@ -130,8 +135,8 @@ int main(int argc, char **argv)
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1, qrSpottedHandler);
     //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
     //ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
-    //ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, floorAFHandler);
-    ros::Subscriber floorAF_sub = nh.subscribe("circlecoordinate", 1, floorAFHandler);
+    //ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, ORBhandler);
+    ros::Subscriber floorAF2_sub = nh.subscribe("circlecoordinate", 1, floorAFHandler);
 
     flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
@@ -185,13 +190,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 }
 
 void wallQRHandler(iDrone::qrAdjust msg){
-    std::cout << "qr wall msg recieved" << std::endl;
+    /*std::cout << "qr wall msg recieved" << std::endl;
     std::cout << msg.r_height << std::endl;
     std::cout << msg.l_height << std::endl;
     std::cout << msg.t_length << std::endl;
     std::cout << msg.b_length << std::endl;
     std::cout << msg.c_pos << std::endl;
-    std::cout << msg.qr_id << std::endl;
+    std::cout << msg.qr_id << std::endl;*/
 
     navLock.lock();
     model.qrAdjust = msg;
@@ -205,7 +210,7 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
     navLock.lock();
     model.qrSpotted = msg->data;
 
-    std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
+    //std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
 
     if(fsm.currentState == SEARCH_e){
         for(int i = 0; i<NUM_AIRFIELDS; i++){
@@ -252,6 +257,28 @@ void floorAFHandler(iDrone::afAdjust msg){
     std::cout << "delta y: "  << delta_y << std::endl;
 */
     fsm.update(model);
+    navLock.unlock();
+}
+
+void ORBhandler(iDrone::afAdjust msg){
+    navLock.lock();
+    //if(model.navdata.altd > 1700) {
+        model.afAdjust = msg;
+/*
+    std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
+    std::cout << "c_x : "  << model.afAdjust.c_x << std::endl;
+    std::cout << "c_y: "  << model.afAdjust.c_y << std::endl;
+    std::cout << "imgc_x: "  << model.afAdjust.imgc_x << std::endl;
+    std::cout << "imgc_y: "  << model.afAdjust.imgc_y << std::endl;
+
+    float delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+    float delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
+
+    std::cout << "delta x: "  << delta_x << std::endl;
+    std::cout << "delta y: "  << delta_y << std::endl;
+*/
+        fsm.update(model);
+    //}
     navLock.unlock();
 }
 
@@ -339,10 +366,10 @@ void ControlPanel::land(){
     pubLock.unlock();
 }
 
-void ControlPanel::up(){
+void ControlPanel::up(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
-    cmdT.linear.z = TurnSpeed;
+    cmdT.linear.z = speed;
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
 
@@ -351,10 +378,10 @@ void ControlPanel::up(){
     pubLock.unlock();
 }
 
-void ControlPanel::down(){
+void ControlPanel::down(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
-    cmdT.linear.z = (-TurnSpeed);
+    cmdT.linear.z = (-speed);
     cmdT.linear.x = 0;
     cmdT.linear.y = 0;
 

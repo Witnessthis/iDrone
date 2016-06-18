@@ -11,8 +11,8 @@ public:
     void goLeft(float speed);
     void goRight(float speed);
     void land();
-    void up();
-    void down();
+    void up(float speed);
+    void down(float speed);
     void forward(float speed);
     void backward(float speed);
     void reset();

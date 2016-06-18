@@ -15,7 +15,7 @@ enum WallMarkings_e {
     NUM_WALL_MARKINGS};
 
 enum AirFields_e {
-    AF1_e, AF2_e, AF3_e, AF4_e, AF5_e, AF6_e, AF7_e, AF8_e, AF9_e, AF10_e, NUM_AIRFIELDS
+    AF0_e, AF1_e, AF2_e, AF3_e, AF4_e, AF5_e, AF6_e, AF7_e, AF8_e, AF9_e, AF10_e, NUM_AIRFIELDS
 };
 
 enum AirFieldMatch {

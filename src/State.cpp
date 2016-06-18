@@ -12,6 +12,8 @@ State::~State() { }
 
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
+
+        std::cout << "MOVE_e" << std::endl;
         return MOVE_e;
         //return ADJUST_BOTTOM_e;
         //return SEARCH_e;
@@ -53,10 +55,14 @@ void CalibrateState::act(model_s model) {
 
 States_e SearchState::getNext(model_s model) {
     if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted || //next airfield spotted try to adjust
-            model.afAdjust.match == 3){//perfect match get closer
+            model.afAdjust.match > 1){//good match get closer
+        std::cout << "ADJUST_BOTTOM_e" << std::endl;
+
         return ADJUST_BOTTOM_e;
     }
     else if(pattern == MOVEMENT_COMPLETE_e){//completed search pattern with no result
+        std::cout << "MOVE_e" << std::endl;
+
         return MOVE_e;
     }
 
@@ -70,7 +76,7 @@ void SearchState::act(model_s model) {
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    std::cout << "altitude: " << model.navdata.altd << std::endl;
+    //std::cout << "altitude: " << model.navdata.altd << std::endl;
 
     //time_t currentTime;
     //time(&currentTime);
@@ -89,23 +95,23 @@ void SearchState::act(model_s model) {
             }
             break;
         case MOVEMENT_UP_e:
-            if(model.navdata.altd < 1700){
-                controlPanel.up();
+            if(model.navdata.altd < 1600){
+                controlPanel.up(1);
             }else {
                 start = std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()
                 );
                 //pattern = MOVEMENT1_e;
                 controlPanel.updateSearchState();
-                pattern = MOVEMENT_COMPLETE_e;
+                pattern = MOVEMENT4_e;
             }
             break;
         case MOVEMENT1_e:
 
-            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+            //std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
-                std::cout << "search state: " << pattern << std::endl;
+                //std::cout << "search state: " << pattern << std::endl;
                 controlPanel.goRight(0.1);
             }
             else{
@@ -116,10 +122,10 @@ void SearchState::act(model_s model) {
             }
             break;
         case MOVEMENT2_e:
-            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+            //std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
-                std::cout << "search state: " << pattern << std::endl;
+                //std::cout << "search state: " << pattern << std::endl;
                 controlPanel.backward(0.1);
             }
             else{
@@ -130,10 +136,10 @@ void SearchState::act(model_s model) {
             }
             break;
         case MOVEMENT3_e:
-            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+            //std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
-                std::cout << "search state: " << pattern << std::endl;
+                //std::cout << "search state: " << pattern << std::endl;
                 controlPanel.goLeft(0.1);
             }
             else{
@@ -144,11 +150,11 @@ void SearchState::act(model_s model) {
             }
             break;
         case MOVEMENT4_e:
-            std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
+            //std::cout << "Difftime: " << (currentTime.count() - start.count()) << std::endl;
 
             if((currentTime.count() - start.count()) < STRAIGHT_MOVEMENT_T){
-                std::cout << "search state: " << pattern << std::endl;
-                controlPanel.forward(0.1);
+                //std::cout << "search state: " << pattern << std::endl;
+                //controlPanel.forward(0.1);
             }
             else{
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -163,7 +169,7 @@ void SearchState::act(model_s model) {
             break;
         case MOVEMENT_COMPLETE_e:
             if((currentTime.count() - start.count()) < FREEZE_TIME_T){
-                std::cout << "search state: " << pattern << std::endl;
+                //std::cout << "search state: " << pattern << std::endl;
                 controlPanel.hover();
             }
             else{
@@ -185,16 +191,24 @@ void SearchState::reset() {
 States_e MoveNewPosState::getNext(model_s model) {
     if(model.qrSpotted != ""
        && model.qrSpotted != model.wallMarkings[model.currentWallMarking].id){//found new QR
+        std::cout << "ADJUST_FRONT_e" << std::endl;
+
         return ADJUST_FRONT_e;
     }
 
     return NO_TRANSITION;
 }
 
-void MoveNewPosState::act(model_s model) { }
+void MoveNewPosState::act(model_s model) {
+
+    controlPanel.goLeft(1);
+    controlPanel.goLeft(1);
+    controlPanel.hover();
+
+}
 
 States_e MoveState::getNext(model_s model) {
-    std::cout << "Searching for QR" << std::endl;
+    //std::cout << "Searching for QR" << std::endl;
 
     if(model.qrSpotted == "" || model.navdata.altd < 1400){
         //std::cout << "model.navdata.altd: " << model.navdata.altd << std::endl;
@@ -205,6 +219,7 @@ States_e MoveState::getNext(model_s model) {
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             if(model.wallMarkings[i].id == model.qrSpotted){// && !model.wallMarkings[i].hasBeenVisited){
                 controlPanel.updateCurrentWallmarking(i);
+                std::cout << "ADJUST_FRONT_e" << std::endl;
 
                 return ADJUST_FRONT_e;
             }
@@ -224,10 +239,10 @@ void MoveState::act(model_s model) {
     controlPanel.frontCam();
 
     if(model.navdata.altd < 1400){
-        controlPanel.up();
+        controlPanel.up(0.25);
     }
     else if(model.navdata.altd > 1600){
-        controlPanel.down();
+        controlPanel.down(0.25);
     }
     else{
         controlPanel.spinLeft();
@@ -242,6 +257,8 @@ States_e AdjustFrontState::getNext(model_s model) {
     time(&currentTime);
 
     if(model.qrAdjust.qr_id == "" && difftime(currentTime, start) > 2){
+        std::cout << "MOVE_e" << std::endl;
+
         return MOVE_e;
     }
 
@@ -256,13 +273,19 @@ States_e AdjustFrontState::getNext(model_s model) {
             if(model.wallMarkings[i].id == model.qrAdjust.qr_id){
                 if(model.wallMarkings[i].hasBeenVisited){//old wall marking
                     if(i == model.airfields[model.nextAirfield].wallMarking){//has next airfield
+                        std::cout << "SEARCH_e" << std::endl;
+
                         return SEARCH_e;
                     }
                     else{//does not have next airfield
+                        std::cout << "MOVE_NEW_POS_e" << std::endl;
+
                         return MOVE_NEW_POS_e;
                     }
                 }
                 else{//new wall marking
+                    std::cout << "SEARCH_e" << std::endl;
+
                     return SEARCH_e;
                 }
 
@@ -284,57 +307,60 @@ void AdjustFrontState::act(model_s model) {
     }
     else if(model.qrAdjust.c_pos < ADJUSTED_LEFT_CENTER_MARGIN){
         //qr is far to the left in the image
-        std::cout << "spin left" << std::endl;
+//        std::cout << "spin left" << std::endl;
         controlPanel.spinLeft();
         controlPanel.hover();
     }
     else if (model.qrAdjust.c_pos > ADJUSTED_RIGHT_CENTER_MARGIN){
         //qr is far to the right in the image
-        std::cout << "spin right" << std::endl;
+//        std::cout << "spin right" << std::endl;
         controlPanel.spinRight();
         controlPanel.hover();
     }
     else if(model.qrAdjust.t_length > (model.qrAdjust.b_length + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the top
-        std::cout << "down" << std::endl;
-        controlPanel.down();
+//        std::cout << "down" << std::endl;
+        controlPanel.down(0.25);
     }
     else if((model.qrAdjust.t_length + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.b_length){
         //qr is to the bottom
-        std::cout << "up" << std::endl;
-        controlPanel.up();
+//        std::cout << "up" << std::endl;
+        controlPanel.up(0.25);
     }
+
     else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p &&
             (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p){
         //qr is too far away
-        std::cout << "forward" << std::endl;
-        controlPanel.forward(1);
-        controlPanel.forward(1);
+        //std::cout << "forward" << std::endl;
+        //controlPanel.forward(0.5);
+        controlPanel.forward(0.5);
         controlPanel.hover();
     }
     else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p &&
             (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p){
         //qr is too close
-        std::cout << "backward" << std::endl;
-        controlPanel.backward(1);
-        controlPanel.backward(1);
+        //std::cout << "backward" << std::endl;
+        //controlPanel.backward(0.5);
+        controlPanel.backward(0.5);
         controlPanel.hover();
     }
+
     else if(model.qrAdjust.r_height > (model.qrAdjust.l_height + ADJUSTED_ERROR_MARGIN_P)){
         //qr is to the left
-        std::cout << "go left" << std::endl;
+//        std::cout << "go left" << std::endl;
         controlPanel.goLeft(1);
         controlPanel.hover();
     }
     else if((model.qrAdjust.r_height + ADJUSTED_ERROR_MARGIN_P) < model.qrAdjust.l_height){
         //qr is to the right
-        std::cout << "go right" << std::endl;
+//        std::cout << "go right" << std::endl;
         controlPanel.goRight(1);
         controlPanel.hover();
     }
+
     else{
         //dont know what to do
-        std::cout << "i am confuse" << std::endl;
+        std::cout << "i am confused" << std::endl;
         controlPanel.hover();
 
         return;
@@ -371,6 +397,8 @@ States_e AdjustBottomState::getNext(model_s model) {
                 controlPanel.updateFoundAirfield(i);
 
                 if(i != model.nextAirfield){
+                    std::cout << "MOVE_e" << std::endl;
+
                     return MOVE_e;
                 }
             }
@@ -384,10 +412,16 @@ States_e AdjustBottomState::getNext(model_s model) {
         //this should be done in a new state, but whatever
         controlPanel.land();
         controlPanel.updateNextAirfield();
+        std::cout << "START_e" << std::endl;
 
         return START_e;
     }
 
+    if(model.navdata.altd > 1600 &&
+            model.afAdjust.match == NO_MATCH_e){
+        std::cout << "MOVE_e" << std::endl;
+        return MOVE_e;
+    }
 
     return NO_TRANSITION;
 }
@@ -399,16 +433,21 @@ void AdjustBottomState::act(model_s model) {
     float delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
 
     if(model.afAdjust.match == NO_MATCH_e || model.afAdjust.match == BAD_MATCH_e || isBottomAdjusted(delta_x, delta_y)){
-        if(isBottomAdjusted(delta_x, delta_y)){
+        if(isBottomAdjusted(delta_x, delta_y) &&
+                model.navdata.altd > 1000){
             std::cout << "is adjusted" << std::endl;
+            controlPanel.down(0.25);
 
-            controlPanel.land();
         }
         else{
-            std::cout << "no match" << std::endl;
+            //std::cout << "no match" << std::endl;
+            if(model.navdata.altd < 1600){
+                controlPanel.up(0.25);
+            }
+            else{
+                controlPanel.hover();
+            }
         }
-
-        controlPanel.hover();
 
     }
 
@@ -416,21 +455,21 @@ void AdjustBottomState::act(model_s model) {
     else {
         if(abs(delta_x) > abs(delta_y)){
             if(delta_x < 0) {
-                std::cout << "go left" << std::endl;
+                //std::cout << "go left" << std::endl;
                 controlPanel.goLeft(0.1);
                 //controlPanel.hover();
             } else {
-                std::cout << "go right" << std::endl;
+                //std::cout << "go right" << std::endl;
                 controlPanel.goRight(0.1);
                 //controlPanel.hover();
             }
         } else {
             if(delta_y < 0) {
-                std::cout << "forward" << std::endl;
+                //std::cout << "forward" << std::endl;
                 controlPanel.forward(0.1);
                 //controlPanel.hover();
             } else {
-                std::cout << "backward" << std::endl;
+                //std::cout << "backward" << std::endl;
                 controlPanel.backward(0.1);
                 //controlPanel.hover();
             }
