@@ -21,7 +21,12 @@ public:
     void bottomCam();
     void diagForwardRight();
     void diagBackwardRight();
+
+    //model updates
     void updateSearchState();
+    void updateNextAirfield();
+    void updateFoundAirfield(int wallID);
+    void updateCurrentWallmarking(int wallID);
 };
 
 #endif

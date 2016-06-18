@@ -119,9 +119,8 @@ int main(int argc, char **argv)
     model.afAdjust.imgc_y = -1;
     model.afAdjust.match = NO_MATCH_e;
 
-    model.nextAirfield = AF1_e;
+    model.nextAirfield = AF2_e;
     model.currentWallMarking = -1;
-
 
     //cv::namedWindow("view");
     //cv::startWindowThread();
@@ -129,8 +128,8 @@ int main(int argc, char **argv)
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
     ros::Subscriber wallQR_sub = nh.subscribe("QRinfo", 1, wallQRHandler);
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1, qrSpottedHandler);
-    ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
-    ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
+    //ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
+    //ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
     //ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, floorAFHandler);
     ros::Subscriber floorAF_sub = nh.subscribe("circlecoordinate", 1, floorAFHandler);
 
@@ -461,5 +460,24 @@ void ControlPanel::diagBackwardRight(){
 }
 
 void ControlPanel::updateSearchState() {
-//    model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
+    model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
+}
+
+void ControlPanel::updateNextAirfield() {
+
+    model.airfields[model.nextAirfield].hasLanded = true;
+
+
+    model.nextAirfield++;
+    if(model.nextAirfield == NUM_AIRFIELDS){
+        model.nextAirfield = AF1_e;
+    }
+}
+
+void ControlPanel::updateFoundAirfield(int afID){
+    model.airfields[afID].wallMarking = model.currentWallMarking;
+}
+
+void ControlPanel::updateCurrentWallmarking(int wallID) {
+    model.currentWallMarking = wallID;
 }

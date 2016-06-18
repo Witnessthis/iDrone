@@ -52,20 +52,14 @@ void CalibrateState::act(model_s model) {
 }
 
 States_e SearchState::getNext(model_s model) {
-    if(model.afAdjust.match > 1){//model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted){
+    if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted || //next airfield spotted try to adjust
+            model.afAdjust.match == 3){//perfect match get closer
         return ADJUST_BOTTOM_e;
     }
-        /*
-    else if(pattern == MOVEMENT_COMPLETE_e){
-        controlPanel.updateSearchState();
+    else if(pattern == MOVEMENT_COMPLETE_e){//completed search pattern with no result
         return MOVE_e;
-    }*/
-/*
-    if(model.navdata.altd >= 2000){
-        controlPanel.hover();
-        return ADJUST_BOTTOM_e;
     }
-*/
+
     return NO_TRANSITION;
 }
 
@@ -102,6 +96,7 @@ void SearchState::act(model_s model) {
                         std::chrono::system_clock::now().time_since_epoch()
                 );
                 //pattern = MOVEMENT1_e;
+                controlPanel.updateSearchState();
                 pattern = MOVEMENT_COMPLETE_e;
             }
             break;
@@ -159,6 +154,7 @@ void SearchState::act(model_s model) {
                 start = std::chrono::duration_cast< std::chrono::milliseconds >(
                         std::chrono::system_clock::now().time_since_epoch()
                 );
+                controlPanel.updateSearchState();
                 pattern = MOVEMENT_COMPLETE_e;
             }
             break;
@@ -187,6 +183,10 @@ void SearchState::reset() {
 }
 
 States_e MoveNewPosState::getNext(model_s model) {
+    if(model.qrSpotted != ""
+       && model.qrSpotted != model.wallMarkings[model.currentWallMarking].id){//found new QR
+        return ADJUST_FRONT_e;
+    }
 
     return NO_TRANSITION;
 }
@@ -194,30 +194,27 @@ States_e MoveNewPosState::getNext(model_s model) {
 void MoveNewPosState::act(model_s model) { }
 
 States_e MoveState::getNext(model_s model) {
-    std::cout << "id: " << model.qrSpotted << std::endl;
+    std::cout << "Searching for QR" << std::endl;
 
     if(model.qrSpotted == "" || model.navdata.altd < 1400){
-        std::cout << "model.navdata.altd: " << model.navdata.altd << std::endl;
+        //std::cout << "model.navdata.altd: " << model.navdata.altd << std::endl;
         return NO_TRANSITION;
     }
 
     if(model.qrAdjust.qr_id != "unknown"){
-        std::cout << "for loop " << model.qrSpotted << std::endl;
-
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
-            std::cout << "wallmarking id: " << model.qrSpotted << std::endl;
+            if(model.wallMarkings[i].id == model.qrSpotted){// && !model.wallMarkings[i].hasBeenVisited){
+                controlPanel.updateCurrentWallmarking(i);
 
-            if((model.wallMarkings[i].id == model.qrSpotted) && !model.wallMarkings[i].hasBeenVisited){
                 return ADJUST_FRONT_e;
             }
         }
     }
+        /*
     else{
-        std::cout << "Adjust state transition plz"  << std::endl;
         return ADJUST_FRONT_e;
-    }
+    }*/
 
-    std::cout << "no transitions" << std::endl;
     return NO_TRANSITION;
 }
 
@@ -280,13 +277,10 @@ void AdjustFrontState::act(model_s model) {
     time_t currentTime;
     time(&currentTime);
 
-    //std::cout << "time elapsed: " << difftime(currentTime, start) << std::endl;
-
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         //is adjusted
         controlPanel.hover();
         std::cout << "is adjusted" << std::endl;
-        //controlPanel.land();
     }
     else if(model.qrAdjust.c_pos < ADJUSTED_LEFT_CENTER_MARGIN){
         //qr is far to the left in the image
@@ -313,7 +307,6 @@ void AdjustFrontState::act(model_s model) {
     else if((model.qrAdjust.r_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p &&
             (model.qrAdjust.l_height + ADJUSTED_BORDER_MARGIN_P) < adjusted_border_height_p){
         //qr is too far away
-        //std::cout <<"adjusted_border_height_p: " << adjusted_border_height_p << std::endl;
         std::cout << "forward" << std::endl;
         controlPanel.forward(1);
         controlPanel.forward(1);
@@ -322,7 +315,6 @@ void AdjustFrontState::act(model_s model) {
     else if((model.qrAdjust.r_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p &&
             (model.qrAdjust.l_height - ADJUSTED_BORDER_MARGIN_P) > adjusted_border_height_p){
         //qr is too close
-        //std::cout <<"adjusted_border_height_p: " << adjusted_border_height_p << std::endl;
         std::cout << "backward" << std::endl;
         controlPanel.backward(1);
         controlPanel.backward(1);
@@ -370,9 +362,35 @@ bool isFrontAdjusted(int r, int l, int t, int b, float c){
 }
 
 States_e AdjustBottomState::getNext(model_s model) {
+    float delta_x = model.afAdjust.c_x - model.afAdjust.imgc_x;
+    float delta_y = model.afAdjust.c_y - model.afAdjust.imgc_y;
+
+    if(model.qrSpotted != ""){
+        for(int i = 0; i< NUM_AIRFIELDS; i++){
+            if(model.airfields[i].airfieldQR == model.qrSpotted){
+                controlPanel.updateFoundAirfield(i);
+
+                if(i != model.nextAirfield){
+                    return MOVE_e;
+                }
+            }
+        }
+    }
+
+    if(model.qrSpotted == model.airfields[model.nextAirfield].airfieldQR &&
+            model.navdata.altd < 1100 &&
+            isBottomAdjusted(delta_x, delta_y)){//found next airfield and we are ready to land
+
+        //this should be done in a new state, but whatever
+        controlPanel.land();
+        controlPanel.updateNextAirfield();
+
+        return START_e;
+    }
 
 
-    return NO_TRANSITION;}
+    return NO_TRANSITION;
+}
 
 void AdjustBottomState::act(model_s model) {
     controlPanel.bottomCam();

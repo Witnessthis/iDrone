@@ -208,11 +208,11 @@ target_link_libraries(iDroneRun ${catkin_LIBRARIES})
 add_dependencies(iDroneRun $($(iDrone)_EXPORTED_TARGETS))
 
 
-add_executable( qr_video src/video.cpp )
-target_link_libraries( qr_video ${OpenCV_LIBS} )
-target_link_libraries(qr_video ${catkin_LIBRARIES})
-target_link_libraries (qr_video ${ZBAR_LIBRARIES} zbar)
-add_dependencies(qr_video $($(iDrone)_EXPORTED_TARGETS))
+#add_executable( qr_video src/video.cpp )
+#target_link_libraries( qr_video ${OpenCV_LIBS} )
+#target_link_libraries(qr_video ${catkin_LIBRARIES})
+#target_link_libraries (qr_video ${ZBAR_LIBRARIES} zbar)
+#add_dependencies(qr_video $($(iDrone)_EXPORTED_TARGETS))
 
 add_executable( identifyQR src/identifyQR.cpp)
 target_link_libraries(identifyQR 
