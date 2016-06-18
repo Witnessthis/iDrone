@@ -65,8 +65,8 @@ def callback(image):
 
             # setup the message type to publish and assign values
             coordinate_msg = afAdjust()
-            coordinate_msg.c_x = float(width - x)
-            coordinate_msg.c_y = float(height - y)
+            coordinate_msg.c_x = float(x)
+            coordinate_msg.c_y = float(y)
             coordinate_msg.imgc_x = float(width)
             coordinate_msg.imgc_y = float(height)
             coordinate_msg.match = 2
@@ -78,6 +78,18 @@ def callback(image):
     # display the processed image and the output image for relation
     #cv2.imshow('Output Image', processImage)
     #cv2.imshow('Processed grayscale Image', grayscale_image)
+    else:
+        pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
+
+        coordinate_msg = afAdjust()
+        coordinate_msg.c_x = float(0)
+        coordinate_msg.c_y = float(0)
+        coordinate_msg.imgc_x = float(width)
+        coordinate_msg.imgc_y = float(height)
+        coordinate_msg.match = 0
+
+        rospy.loginfo(coordinate_msg)
+        pub.publish(coordinate_msg)
 
     # keep frame alive
     cv2.waitKey(1)

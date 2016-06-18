@@ -39,8 +39,8 @@ ros::ServiceClient cam_srv;
 
 iDrone::CamSelect camSelect_srv;
 
-float TurnSpeed = 0.25;
-float MoveSpeed = 1.0;
+float TurnSpeed = 0.50;
+float MoveSpeed = 0.1;
 
 //====== Function prototypes ======
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
@@ -131,7 +131,8 @@ int main(int argc, char **argv)
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1, qrSpottedHandler);
     ros::Subscriber frontImageRaw_sub = nh.subscribe("ardrone/front/image_raw", 1, selectiveImageAnalysisCallback);
     ros::Subscriber bottomImageRaw_sub = nh.subscribe("ardrone/bottom/image_raw", 1, selectiveImageAnalysisCallback);
-    ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, floorAFHandler);
+    //ros::Subscriber floorAF_sub = nh.subscribe("ORB_Detection", 1, floorAFHandler);
+    ros::Subscriber floorAF_sub = nh.subscribe("circlecoordinate", 1, floorAFHandler);
 
     flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
@@ -309,24 +310,24 @@ void ControlPanel::spinRight(){
     pubLock.unlock();
 }
 
-void ControlPanel::goLeft(){
+void ControlPanel::goLeft(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
-    cmdT.linear.y = MoveSpeed;
+    cmdT.linear.y = speed;
 
     pubLock.lock();
     vel_pub.publish(cmdT);
     pubLock.unlock();
 }
 
-void ControlPanel::goRight(){
+void ControlPanel::goRight(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
     cmdT.linear.x = 0;
-    cmdT.linear.y = (-MoveSpeed);
+    cmdT.linear.y = (-speed);
 
     pubLock.lock();
     vel_pub.publish(cmdT);
@@ -363,11 +364,11 @@ void ControlPanel::down(){
     pubLock.unlock();
 }
 
-void ControlPanel::forward(){
+void ControlPanel::forward(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = MoveSpeed;
+    cmdT.linear.x = speed;
     cmdT.linear.y = 0;
 
     pubLock.lock();
@@ -375,11 +376,11 @@ void ControlPanel::forward(){
     pubLock.unlock();
 }
 
-void ControlPanel::backward(){
+void ControlPanel::backward(float speed){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
     cmdT.linear.z = 0;
-    cmdT.linear.x = (-MoveSpeed);
+    cmdT.linear.x = (-speed);
     cmdT.linear.y = 0;
 
     pubLock.lock();
@@ -460,5 +461,5 @@ void ControlPanel::diagBackwardRight(){
 }
 
 void ControlPanel::updateSearchState() {
-    model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
+//    model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
 }

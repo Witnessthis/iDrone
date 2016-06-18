@@ -8,13 +8,13 @@ public:
     void hover();
     void spinLeft();
     void spinRight();
-    void goLeft();
-    void goRight();
+    void goLeft(float speed);
+    void goRight(float speed);
     void land();
     void up();
     void down();
-    void forward();
-    void backward();
+    void forward(float speed);
+    void backward(float speed);
     void reset();
     void flatTrim();
     void frontCam();
