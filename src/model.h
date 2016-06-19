@@ -49,6 +49,8 @@ struct model_s{
     std::string qrSpotted;
     iDrone::afAdjust afAdjust;
 
+    int badMatchCounter;
+    int consecutiveMatchesCounter;
 
 };
 

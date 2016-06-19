@@ -99,6 +99,7 @@ void FiniteStateMachine::update(model_s model) {
                 break;
             case ADJUST_BOTTOM_e:
                 adjustBottomState.mayAct = true;
+                adjustBottomState.reset();
                 break;
             case OLD_AIRFEILD_e:
                 oldAirfeildState.mayAct = true;
