@@ -166,24 +166,24 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 
 
-        for(int i=0;i<vp.size();i++) {
+        //for(int i=0;i<vp.size();i++) {
 
-            if (i == 0) {
+            if (/*i*/vp.size() == 0) {
                 leftLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(255,0,0),3);
                 cout << "leftlength: " << leftLength << endl;
             }
-            else if (i == 1) {
+            else if (/*i*/vp.size() == 1) {
                 botLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,255,0),3);
                 cout << "botLength: " << botLength << endl;
             }
-            else if (i == 2) {
+            else if (/*i*/vp.size() == 2) {
                 rightLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,255),3);
                 cout << "rightlength: " << rightLength << endl;
             }
-            else if (i == 3) {
+            else if (/*i*/vp.size() == 3) {
                 topLength = sqrt(pow(vp[i].x - vp[(i + 1) % 4].x, 2) + pow(vp[i].y - vp[(i + 1) % 4].y, 2));
                 line(cv_ptr->image,vp[i],vp[(i+1)%4],Scalar(0,0,0),3);
                 cout << "toplength: " << topLength << endl;
@@ -191,7 +191,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
             circle(cv_ptr->image, Point(centerx,centery), 4, Scalar(0,0,255), 2, 8, 0);
 
-        }
+        //}
 
 
         //===== CALCULATE WHICH QR IS THE LARGEST =====
