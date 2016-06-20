@@ -181,8 +181,10 @@ def callback(image):
         cv2.imshow('Output Image', processImage)
     #cv2.imshow('Processed grayscale Image', grayscale_image)
     else:
+        # the controller demands data even when no circle is found, therefor this is introduced
         pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
 
+        # assign values to the afAdjust message
         coordinate_msg = afAdjust()
         coordinate_msg.c_x = float(0)
         coordinate_msg.c_y = float(0)
@@ -190,6 +192,7 @@ def callback(image):
         coordinate_msg.imgc_y = float(height)
         coordinate_msg.match = 0
 
+        # log and publish the message
         rospy.loginfo(coordinate_msg)
         pub.publish(coordinate_msg)
 
