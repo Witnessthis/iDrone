@@ -178,7 +178,7 @@ def callback(image):
             pub.publish(coordinate_msg)
 
     # display the processed image and the output image for relation
-        cv2.imshow('Output Image', processImage)
+    #cv2.imshow('Output Image', processImage)
     #cv2.imshow('Processed grayscale Image', grayscale_image)
     else:
         # the controller demands data even when no circle is found, therefor this is introduced
