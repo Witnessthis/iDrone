@@ -122,7 +122,7 @@ def callback(image):
     # convert image to grayscale for processing
     grayscale_image = cv2.cvtColor(processImage, cv2.COLOR_BGR2GRAY)
 
-    # apply blurs to remove noice, experimenting with gaussian and median blur currently
+    # apply blurs to remove noise, experimenting with gaussian and median blur currently
     grayscale_image = cv2.GaussianBlur(grayscale_image, (5, 5), 0);
     grayscale_image = cv2.medianBlur(grayscale_image, 5)
 
@@ -176,10 +176,11 @@ def callback(image):
             # log and publish the message
             rospy.loginfo(coordinate_msg)
             pub.publish(coordinate_msg)
+        #cv2.imshow('Output Image', processImage)
+        #cv2.imshow('Processed grayscale Image', grayscale_image)
+        #cv2.waitKey(0)
 
     # display the processed image and the output image for relation
-    #cv2.imshow('Output Image', processImage)
-    #cv2.imshow('Processed grayscale Image', grayscale_image)
     else:
         # the controller demands data even when no circle is found, therefor this is introduced
         pub = rospy.Publisher('circlecoordinate', afAdjust, queue_size=10)
