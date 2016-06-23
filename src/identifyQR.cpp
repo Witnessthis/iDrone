@@ -160,12 +160,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         vp=sortedPoints;
 
 
-
+        // Calculate center of QR  code
         centerx = (vp[0].x + vp[1].x + vp[2].x + vp[3].x)/4;
         centery = (vp[0].y + vp[1].y + vp[2].y + vp[3].y)/4;
 
 
-
+        // calculate the lengths of the sides and draw lines.
         for(int i=0;i<vp.size();i++) {
 
             if (i == 0) {

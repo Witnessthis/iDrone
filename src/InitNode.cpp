@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     model.afAdjust.imgc_y = -1;
     model.afAdjust.match = NO_MATCH_e;
 
-    model.nextAirfield = AF2_e;
+    model.nextAirfield = AF1_e;
     model.currentWallMarking = -1;
 
 
@@ -516,7 +516,7 @@ void ControlPanel::updateNextAirfield() {
 
     model.nextAirfield++;
     if(model.nextAirfield == NUM_AIRFIELDS){
-        model.nextAirfield = AF1_e;
+        model.nextAirfield = AF0_e;
     }
 }
 

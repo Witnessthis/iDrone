@@ -206,7 +206,7 @@ States_e MoveNewPosState::getNext(model_s model) {
 }
 
 void MoveNewPosState::act(model_s model) {
-    if(model.currentWallMarking != W11_e || model.currentWallMarking != W21_e){
+    if(model.currentWallMarking != W11_e || model.currentWallMarking != W21_e || model.currentWallMarking != W00_e || model.currentWallMarking != W30_e ){
         controlPanel.goLeft(1);
         controlPanel.goLeft(1);
         controlPanel.hover();
