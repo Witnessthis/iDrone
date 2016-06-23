@@ -1,3 +1,5 @@
+//Data model
+
 #ifndef __MODEL_H__DEFINED
 #define __MODEL_H__DEFINED
 

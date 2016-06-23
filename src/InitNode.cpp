@@ -137,6 +137,7 @@ int main(int argc, char **argv)
     //cv::namedWindow("view");
     //cv::startWindowThread();
 
+    //init subscribers
     ros::Subscriber navdata_sub = nh.subscribe("ardrone/navdata", 1, navdataHandler);
     ros::Subscriber wallQR_sub = nh.subscribe("QRinfo", 1, wallQRHandler);
     ros::Subscriber qrSpotted_sub = nh.subscribe("qr_spotted", 1, qrSpottedHandler);
@@ -147,24 +148,24 @@ int main(int argc, char **argv)
 
     flatTrimClient = nh.serviceClient<std_srvs::Empty>("ardrone/flatTrim", 1);
 
+    //init publishers
     takeoff_pub = nh.advertise<std_msgs::Empty>("ardrone/takeoff", 1000);
     land_pub = nh.advertise<std_msgs::Empty>("ardrone/land", 1000);
     reset_pub = nh.advertise<std_msgs::Empty>("ardrone/reset", 1000);
     vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
+    //start ai thread
     std::thread FSMThread(iDroneFSM);
 
-    /*
-    for(int i = 0; i< NUM_WALL_MARKINGS; i++){
-        std::cout << model.wallMarkings[i].id << std::endl;
-    }*/
-
+    //init camera control service
     cam_srv = nh.serviceClient<iDrone::CamSelect>("/ardrone/setcamchannel");
 
+    //enter ros loop
     ros::spin();
 
-    std::cout << "shutting down" << std::endl;
 
+    std::cout << "shutting down" << std::endl;
+    //shut ai thread
     run = 0;
 
     //cv::destroyWindow("view");
@@ -219,6 +220,7 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
 
     //std::cout << "qr spotted recieved: "  << model.qrSpotted << std::endl;
 
+    //update position if found airfield
     if(fsm.currentState == SEARCH_e){
         for(int i = 0; i<NUM_AIRFIELDS; i++){
             if(model.airfields[i].airfieldQR == model.qrSpotted &&
@@ -229,6 +231,7 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
         }
     }
 
+    //update current wallmarking if necessary
     if(model.currentWallMarking < 0){
         for(int i = 0; i<NUM_WALL_MARKINGS; i++){
             if(model.wallMarkings[i].id == model.qrSpotted){
@@ -243,10 +246,12 @@ void qrSpottedHandler(const std_msgs::String::ConstPtr& msg){
     navLock.unlock();
 }
 
+//not used with current imaganalysis nodes
 void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
     //TODO publish required imageanalysis topics
 }
 
+//handle airfield adjustment messages
 void floorAFHandler(iDrone::afAdjust msg){
     navLock.lock();
 
@@ -278,6 +283,7 @@ void floorAFHandler(iDrone::afAdjust msg){
     navLock.unlock();
 }
 
+//unused ORB detection handler
 void ORBhandler(iDrone::afAdjust msg){
     navLock.lock();
     //if(model.navdata.altd > 1700) {
@@ -313,6 +319,10 @@ void iDroneFSM() {
 
     }
 }
+
+//
+//navigation commands
+//
 
 void ControlPanel::takeOff(){
     pubLock.lock();
@@ -438,6 +448,7 @@ void ControlPanel::reset() {
     pubLock.unlock();
 }
 
+//unfinished flattrim command implementation
 bool hasCalledFlatTrim = false;
 void ControlPanel::flatTrim() {
     if(hasCalledFlatTrim){
@@ -480,6 +491,7 @@ void ControlPanel::bottomCam() {
     pubLock.unlock();
 }
 
+//unused advanced movement command
 void ControlPanel::diagForwardRight(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
@@ -492,6 +504,7 @@ void ControlPanel::diagForwardRight(){
     pubLock.unlock();
 }
 
+//unused advanced movement command
 void ControlPanel::diagBackwardRight(){
     geometry_msgs::Twist cmdT;
     cmdT.angular.z = 0;
@@ -504,6 +517,10 @@ void ControlPanel::diagBackwardRight(){
     pubLock.unlock();
 }
 
+
+//
+//model changing controlpanel functions
+//
 void ControlPanel::updateSearchState() {
     model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
     model.consecutiveMatchesCounter = 0;

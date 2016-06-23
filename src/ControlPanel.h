@@ -1,6 +1,7 @@
 #ifndef __CONTROL_PANEL_H__DEFINED
 #define __CONTROL_PANEL_H__DEFINED
 
+//collection of drone navigation command functions
 class ControlPanel{
 
 public:

@@ -10,19 +10,18 @@ State::State() {
 
 State::~State() { }
 
+//Lift Off state
 States_e StartState::getNext(model_s model) {
     if(model.navdata.state == 4){//drone is hovering
 
         std::cout << "MOVE_e" << std::endl;
         return MOVE_e;
-        //return ADJUST_BOTTOM_e;
-        //return SEARCH_e;
-        //return ADJUST_FRONT_e;
     }
 
     return NO_TRANSITION;
 }
 
+//Lift Off state
 void StartState::act(model_s model) {
     //controlPanel.reset();
 
@@ -36,6 +35,7 @@ void StartState::act(model_s model) {
     controlPanel.hover();
 }
 
+//unused calibration state as of now
 States_e CalibrateState::getNext(model_s model) {
     //std::cout << "Calibrated: " << model.hasCalibrated << std::endl;
     std::cout << "Calibrated: " << model.hasCalibrated << std::endl;
@@ -46,6 +46,7 @@ States_e CalibrateState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
+//unused calibration state as of now
 void CalibrateState::act(model_s model) {
     //controlPanel.land();
     std::cout << "Calibrating"<< std::endl;
@@ -53,6 +54,7 @@ void CalibrateState::act(model_s model) {
     model.hasCalibrated = true;
 }
 
+//do search routine and react if landingspot is found
 States_e SearchState::getNext(model_s model) {
     if(model.airfields[model.nextAirfield].airfieldQR == model.qrSpotted || //next airfield spotted try to adjust
             model.afAdjust.match > 1){//good match get closer
@@ -69,6 +71,7 @@ States_e SearchState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
+//do search routine and react if landingspot is found
 void SearchState::act(model_s model) {
     controlPanel.bottomCam();
 
@@ -83,6 +86,7 @@ void SearchState::act(model_s model) {
 
     //double d = difftime(currentTime, start);
 
+    //contains unused instructions for square search pattern
     switch (pattern){
         case MOVEMENT_FREEZE:
             if((currentTime.count() - start.count()) < FREEZE_TIME_T){
@@ -180,6 +184,7 @@ void SearchState::act(model_s model) {
     }
 }
 
+//resets timer and pattern progress
 void SearchState::reset() {
     //time(&start);
     start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -188,6 +193,7 @@ void SearchState::reset() {
     pattern = MOVEMENT_FREEZE;
 }
 
+//move counter clockwise towards the next wall marking
 States_e MoveNewPosState::getNext(model_s model) {
     if(model.qrSpotted != ""
        && model.qrSpotted != model.wallMarkings[model.currentWallMarking].id
@@ -205,6 +211,7 @@ States_e MoveNewPosState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
+//move counter clockwise towards the next wall marking
 void MoveNewPosState::act(model_s model) {
     if(model.currentWallMarking != W11_e || model.currentWallMarking != W21_e || model.currentWallMarking != W00_e || model.currentWallMarking != W30_e ){
         controlPanel.goLeft(1);
@@ -216,6 +223,7 @@ void MoveNewPosState::act(model_s model) {
     }
 }
 
+//try to find any wallmarking
 States_e MoveState::getNext(model_s model) {
     //std::cout << "Searching for QR" << std::endl;
 
@@ -224,6 +232,8 @@ States_e MoveState::getNext(model_s model) {
         return NO_TRANSITION;
     }
 
+    //found some wallmarking
+    //problematic corner markings are actively ignored
     if(model.qrAdjust.qr_id != "unknown"
            && model.qrSpotted != "W01.00"
            && model.qrSpotted != "W00.04"
@@ -242,6 +252,7 @@ States_e MoveState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
+//try to find any wallmarking
 void MoveState::act(model_s model) {
 
 
@@ -260,11 +271,12 @@ void MoveState::act(model_s model) {
 
 }
 
+//adjust the drone to center in front of the QR code
 States_e AdjustFrontState::getNext(model_s model) {
-    //adjust the drone to center in front of the QR code
     time_t currentTime;
     time(&currentTime);
 
+    //give up adjustment if qr have been lost from sight for some time
     if(model.qrAdjust.qr_id == "" && difftime(currentTime, start) > 2){
         std::cout << "MOVE_e" << std::endl;
 
@@ -276,6 +288,7 @@ States_e AdjustFrontState::getNext(model_s model) {
         time(&start);
     }
 
+    //drone has been adjusted, change state based on earlier searches
     if(isFrontAdjusted(model.qrAdjust.r_height, model.qrAdjust.l_height, model.qrAdjust.t_length, model.qrAdjust.b_length, model.qrAdjust.c_pos)){
         for(int i=0; i<NUM_WALL_MARKINGS; i++){
             //find marking
@@ -305,6 +318,7 @@ States_e AdjustFrontState::getNext(model_s model) {
     return NO_TRANSITION;
 }
 
+//adjust the drone to center in front of the QR code
 void AdjustFrontState::act(model_s model) {
     time_t currentTime;
     time(&currentTime);
@@ -377,10 +391,12 @@ void AdjustFrontState::act(model_s model) {
 
 }
 
+//reset timer
 void AdjustFrontState::reset(){
     time(&start);
 }
 
+//determines if the drone is sufficiently centered before some wallmarking
 bool isFrontAdjusted(int r, int l, int t, int b, float c){
     bool centerLeft = !(c < ADJUSTED_LEFT_CENTER_MARGIN);
     bool centerRight = !(c > ADJUSTED_RIGHT_CENTER_MARGIN);
@@ -396,22 +412,24 @@ bool isFrontAdjusted(int r, int l, int t, int b, float c){
     return centerLeft & centerRight & forward & backward & left & right & down & up;
 }
 
+//center and close in towards landingspot
 States_e AdjustBottomState::getNext(model_s model) {
 
     if(model.navdata.state == 2){//has landed
         return START_e;
     }
 
-    if(doLand){
+    if(doLand){//do not change state if we are about to land
         return NO_TRANSITION;
     }
 
     if(model.qrSpotted != ""){
         for(int i = 0; i< NUM_AIRFIELDS; i++){
+            //iterate landingspots and register position
             if(model.airfields[i].airfieldQR == model.qrSpotted){
                 controlPanel.updateFoundAirfield(i);
 
-                if(i != model.nextAirfield){
+                if(i != model.nextAirfield){// the drone should not land on the landingspot
                     std::cout << "MOVE_e" << std::endl;
 
                     return MOVE_e;
@@ -421,7 +439,6 @@ States_e AdjustBottomState::getNext(model_s model) {
     }
 
     if(model.qrSpotted == model.airfields[model.nextAirfield].airfieldQR){//found next airfield and we are ready to land
-        //this should be done in a new state, but whatever
         std::cout << "LAND NOW" << std::endl;
         doLand = true;
         start = std::chrono::duration_cast< std::chrono::milliseconds >(
@@ -431,6 +448,7 @@ States_e AdjustBottomState::getNext(model_s model) {
         return NO_TRANSITION; //should not take off just yet
     }
 
+    //change state if the landingspot has been lost from sight for some time
     if(model.badMatchCounter > BAD_MATCH_TOLERANCE){
         if(model.consecutiveMatchesCounter < REQUIRED_CONSECUTIVE_MATCHES){
             controlPanel.updateSearchState();
@@ -441,16 +459,10 @@ States_e AdjustBottomState::getNext(model_s model) {
         return MOVE_e;
     }
 
-    /*
-    if(model.navdata.altd > 1600 &&
-            model.afAdjust.match == NO_MATCH_e){
-        std::cout << "MOVE_e" << std::endl;
-        return MOVE_e;
-    }*/
-
     return NO_TRANSITION;
 }
 
+//center and close in towards landingspot
 void AdjustBottomState::act(model_s model) {
     controlPanel.bottomCam();
 
@@ -513,6 +525,7 @@ void AdjustBottomState::act(model_s model) {
 
 }
 
+//reset adjust bottom state
 void AdjustBottomState::reset() {
     start = std::chrono::duration_cast< std::chrono::milliseconds >(
             std::chrono::system_clock::now().time_since_epoch()
@@ -521,11 +534,12 @@ void AdjustBottomState::reset() {
     doLand = false;
 }
 
+//determine if bottom is centered sufficiently
 bool isBottomAdjusted(float dx, float dy){
     //std::cout << "dx, dy" << dx << ", " << dy << std::endl;
     return ((abs(dx) < ADJUSTED_BOTTOM_MARGIN) && (abs(dy) < ADJUSTED_BOTTOM_MARGIN));
 }
-
+ //unused states
 States_e MatchState::getNext(model_s model) {
     return NO_TRANSITION; }
 

@@ -18,11 +18,14 @@ FiniteStateMachine::FiniteStateMachine() {
 
 FiniteStateMachine::~FiniteStateMachine() { }
 
+//determine if the state machine should change its active state
 void FiniteStateMachine::update(model_s model) {
     //std::cout << "update" << std::endl;
     //std::cout << "currentState: " << currentState << std::endl;
     /*std::cout << "Num States: " << NUM_STATES << std::endl;
 */
+
+    //determine next state based on the model
     States_e next = NO_TRANSITION;
 
     switch (currentState) {
@@ -71,11 +74,8 @@ void FiniteStateMachine::update(model_s model) {
             std::cout << "state get next not implemented" << std::endl;
     }
 
-    //std::cout << "next transition: " << next << std::endl;
-
+    //change state
     if (next != NO_TRANSITION) {
-        //TODO interrupt current action
-
         switch (next) {
             case START_e:
                 startState.mayAct = true;
@@ -119,6 +119,7 @@ void FiniteStateMachine::update(model_s model) {
     }
 }
 
+//peform the action tied to the currently active state
 void FiniteStateMachine::act(model_s model) {
 
     //std::cout << "currentState: " << currentState << std::endl;
