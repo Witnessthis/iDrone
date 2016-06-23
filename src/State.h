@@ -21,6 +21,10 @@ const int adjusted_border_height_p = 78;//cmToPixel(ADJUSTED_BORDER_HEIGHT_CM);
 #define STRAIGHT_MOVEMENT_T 1000
 #define FREEZE_TIME_T 5000
 
+#define BAD_MATCH_TOLERANCE 100
+#define REQUIRED_CONSECUTIVE_MATCHES 8
+#define STABILIZE_TIMER_T 2000
+
 bool isFrontAdjusted(int r, int l, int t, int b, float c);
 bool isBottomAdjusted(float dx, float dy);
 
@@ -81,6 +85,9 @@ public:
 
 class AdjustBottomState : public State{
 public:
+    bool doLand;
+    std::chrono::milliseconds start;
+    void reset();
     States_e getNext(model_s model);
     void act(model_s model);
 };

@@ -88,19 +88,22 @@ int main(int argc, char **argv)
 
     }
 
+    model.wallMarkings[W00_e].hasBeenVisited = true;
+    model.wallMarkings[W01_e].hasBeenVisited = true;
+    model.wallMarkings[W23_e].hasBeenVisited = true;
+    model.wallMarkings[W24_e].hasBeenVisited = true;
+    model.wallMarkings[W30_e].hasBeenVisited = true;
+    model.wallMarkings[W31_e].hasBeenVisited = true;
+    model.wallMarkings[W32_e].hasBeenVisited = true;
+    model.wallMarkings[W33_e].hasBeenVisited = true;
+    model.wallMarkings[W34_e].hasBeenVisited = true;
+
     for(int j = 0; j<NUM_AIRFIELDS; j++){
         model.airfields[j].hasLanded = false;
-/*
-        int counter2 = 0;
-        int temp2 = j;
-        while(temp2 > 9){ // 10 airfields
-            counter2++;
-            temp2 = temp2 - 10;
-        }*/
 
         std::stringstream airss;
 
-        airss << "AR.0" << j;
+        airss << "AF.0" << j;
         model.airfields[j].airfieldQR = airss.str();
 
         std::cout << model.airfields[j].airfieldQR << std::endl;
@@ -126,6 +129,10 @@ int main(int argc, char **argv)
 
     model.nextAirfield = AF2_e;
     model.currentWallMarking = -1;
+
+
+    model.badMatchCounter = 0;
+    model.consecutiveMatchesCounter = 0;
 
     //cv::namedWindow("view");
     //cv::startWindowThread();
@@ -242,7 +249,18 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 
 void floorAFHandler(iDrone::afAdjust msg){
     navLock.lock();
+
+    if(model.afAdjust.match > 1 && msg.match > 1){//2 consecutive matches
+        model.consecutiveMatchesCounter++;
+    }
+
     model.afAdjust = msg;
+
+    model.badMatchCounter++;
+
+    if(model.afAdjust.match > 1){
+        model.badMatchCounter = 0;
+    }
 /*
     std::cout << "Air Field match: "  << model.afAdjust.match << std::endl;
     std::cout << "c_x : "  << model.afAdjust.c_x << std::endl;
@@ -488,6 +506,7 @@ void ControlPanel::diagBackwardRight(){
 
 void ControlPanel::updateSearchState() {
     model.wallMarkings[model.currentWallMarking].hasBeenVisited = true;
+    model.consecutiveMatchesCounter = 0;
 }
 
 void ControlPanel::updateNextAirfield() {
