@@ -39,7 +39,7 @@ float compare_max_value2 = 4;
 float compare_min_value2 = -4;
 Mat templateImage;
 
-// TODO: Change the string in the loadPicture() method, to the path to your string location
+// TODO: Change the string in the loadPicture() method, to the path to your image location
 
 /*
  * ROS messages
@@ -48,12 +48,18 @@ Mat templateImage;
  * 3: NO_MATCH
  *
  * format
- * 1: 1 pointx pointy centerx centery
- * 2: 2
- * 3: 3
+ * type pointx pointy centerx centery
+ *
+ * to run this program, use rosrun, and consider adding some of the arguments on run,
+ * if you wan't to run an image feed from other than the AR drone driver
+ * arguments accepted:
+ * run
+ * debug
+ * webcam
+ *
  */
 
-Mat computeMatch(Mat image1) {
+Mat computeMatch(Mat image1, std::vector <cv::DMatch> good_matches) {
 
     float corner_x_max = scene_corners[0].x + scene_corners[1].x + scene_corners[2].x + scene_corners[3].x;
     float corner_y_max = scene_corners[0].y + scene_corners[1].y + scene_corners[2].y + scene_corners[3].y;
@@ -216,7 +222,7 @@ Mat computeMatch(Mat image1) {
         } else {
             int lengthDenierCounter = 0;
             for (int i = 0; i<4; i++) {
-                if (lengths[i]<200.0) lengthDenierCounter++;
+                if (lengths[i]<100.0) lengthDenierCounter++;
             }
 
             if (lengthDenierCounter == 4) {
@@ -331,8 +337,11 @@ Mat ORBTemplateMatch(Mat image1, Mat image2) {
 
             cv::perspectiveTransform(obj_corners, scene_corners, H);
 
+            // show matches
+            //if (img_matches.data) imshow("1", img_matches);
+
             if (image2.data) {
-                return computeMatch(image2);
+                return computeMatch(image2, good_matches);
             }
             message = 0;
             return image2;
@@ -350,7 +359,7 @@ Mat loadPicture(String imageToLoad){
     Mat picture;
     // TODO: Change this string to the path to your string location
     if (imageToLoad=="default") {
-        picture = imread("/home/lime/catkin_ws/src/iDrone/src/Template.png");
+        picture = imread("/home/praem/catkin_ws/src/iDrone/src/Template.png");
     } else {
         picture = imread(imageToLoad);
     }
@@ -432,8 +441,6 @@ void selectiveImageAnalysisCallback(const sensor_msgs::ImageConstPtr& msg){
 
 int main(int argc, char* argv[])
 {
-
-
     // Init ros
     ros::init(argc, argv, "talker");
     ros::NodeHandle n;
@@ -484,6 +491,20 @@ int main(int argc, char* argv[])
                 loadedFrameImage = loadFrame(counter);
                 runImageLoop(loadedFrameImage);
                 counter++;
+                ros::spinOnce();
+                waitKey(0);
+            }
+        }
+
+        else if (command == "webcam"){
+            cout << "running orbdetection with webcam \n";
+            Mat frame;
+            VideoCapture cap(0); // open the default camera
+            if(!cap.isOpened())  // check if we succeeded
+                return -1;
+            while(1) {
+                cap >> frame;
+                runImageLoop(frame);
                 ros::spinOnce();
                 waitKey(0);
             }
