@@ -12,7 +12,8 @@ from cv_bridge import CvBridge, CvBridgeError
 from iDrone.msg import afAdjust
 from math import sqrt, acos, pi
 
-def analyzeLines(image):
+# analyze lines in image and determine if they are part of an airfield, given an accuracy and coordinates and radius of circles in the image
+def analyzeLines(image, xc, yc, rc, accuracy):
     img = image
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = gray
@@ -39,6 +40,7 @@ def analyzeLines(image):
     cv2.imshow("Tobias window: ",img)
     cv2.waitKey(1)
 
+    # dertermine if line midpoint is inside given borders
     def isInsideBorder(line, borders):
         xm = (line[0] + line[2]) / 2
         ym = (line[1] + line[3]) / 2
@@ -53,6 +55,7 @@ def analyzeLines(image):
         else:
             return False
 
+    # calculates lines angle and determine if they can be considered perpendicular within the given accuracy
     def isPerpendicular(line1, line2, accuracy):
         xa = line1[0]
         ya = line1[1]
@@ -66,6 +69,7 @@ def analyzeLines(image):
         cd_x = xd - xc
         ab_y = yb - ya
         cd_y = yd - yc
+        #Formula for determining angle with vector calculus
         ab_mag = sqrt(ab_x * ab_x + ab_y * ab_y)
         cd_mag = sqrt(cd_x * cd_x + cd_y * cd_y)
         angle = acos((ab_x * cd_x + ab_y * cd_y) / (ab_mag * cd_mag))
@@ -76,16 +80,17 @@ def analyzeLines(image):
         else:
             return False
 
-    xc = 440
-    yc = 192
-    r = 73
-    accuracy = 20
+  #  xc = 440
+   # yc = 192
+    #r = 73
+    #accuracy = 20
     # lines = [[5,4,5,6],[4,3,6,3]]
     # lines  = [[57,510,363,510],[247,291,241,132]]
     # print("test")
+
     # framefactor
-    ff = r * 2
-    bordersCircle = [xc - r, yc - r, xc + r, yc + r]
+    ff = rc * 2
+    bordersCircle = [xc - rc, yc - rc, xc + rc, yc + rc]
     bordersFrame = [xc - ff, yc - ff, xc + ff, yc + ff]
     print("bordersCircle: " + str(bordersCircle))
     print("bordersFrame " + str(bordersFrame))
